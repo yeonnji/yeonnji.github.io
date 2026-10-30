@@ -1,0 +1,59 @@
+# 주장 목록. 본문의 핵심 문장은 <Claim id="..."/>로 이 파일을 참조한다.
+#   verified   : 원문으로 확인함 (source 필수)
+#   scoped     : 사실이지만 조건과 함께만 써야 함 (scope 필수)
+#   unverified : 확인 전. 본문에서 참조하면 빌드가 실패한다.
+
+- id: roi-psnr
+  status: verified
+  text: "DrJohnson 장면의 3개 광원 ROI 평균 PSNR 21.60 → 22.69 dB (+1.09 dB)"
+  source: "학위논문 표 3 · 정보과학회논문지 표 1"
+
+- id: roi-ssim-lpips
+  status: verified
+  text: "같은 ROI 평균에서 SSIM 0.812 → 0.825, LPIPS 0.306 → 0.287 (약 6.2% 감소)"
+  source: "학위논문 표 3. LPIPS 감소율은 (0.306−0.287)/0.306로 계산"
+
+- id: ablation-all
+  status: verified
+  text: "전체 모델이 모듈을 하나씩 제거한 3개 조건보다 PSNR·SSIM·LPIPS 모두 우수"
+  source: "학위논문 표 4"
+
+- id: fullview-gain
+  status: verified
+  text: "전체 이미지 기준 PSNR 향상은 시점별 +0.17 ~ +0.38 dB로, 광원 ROI보다 작음"
+  source: "학위논문 표 2"
+
+- id: first-author
+  status: verified
+  text: "관련 논문 3편 제1저자 (KCC 2025 · 정보과학회논문지 · MUE 2026)"
+  source: "각 논문 저자 표기"
+
+- id: awards
+  status: verified
+  text: "KCC 2025 우수논문상 · MUE 2026 Best Paper Award"
+  source: "수상 증빙, paper-mue2026 README"
+
+- id: reg-schedule
+  status: verified
+  text: "총 30,000회 중 15,000회 이후 속성 정규화를 활성화하고, 활성화 후 일정 구간 동안 가중치를 선형으로 높임"
+  source: "학위논문 3.3절·4.1절. 논문 실험이 이 설정이었음을 저자 확인 (공개 저장소 기본값과 다름)"
+
+- id: glight
+  status: verified
+  text: "반복마다 가우시안 밝기를 계산해 임계값을 넘는 가우시안을 G_light로 식별"
+  source: "학위논문 3.3절. 논문 실험이 이 방식이었음을 저자 확인 (공개 저장소 구현과 다름)"
+
+- id: mue-metric
+  status: scoped
+  text: "정반사 제외 영역 PSNR 35.80 → 35.88, SSIM 0.89 → 0.90, LPIPS 0.22 유지"
+  scope: "MUE 2026 표 1. 정반사 영역을 뺀 픽셀만 평가한 값"
+
+- id: fps
+  status: scoped
+  text: "RTX 3090에서 평균 135 FPS"
+  scope: "정보과학회논문지 별도 렌더링 실험. 학위논문 학습 환경(RTX 4090)과 다른 조건"
+
+- id: illum-role
+  status: verified
+  text: "단계별 개선 방법을 연구하고, 원본 3DGS 대비 수정 코드를 직접 작성해 표준 3DGS와의 정량·정성 비교와 구성요소 제거 실험을 수행"
+  source: "저자 확인 (두 논문 저장소의 수정 코드 전부 본인 작성, 공동저자·지도교수는 논의·검토)"

@@ -1,0 +1,164 @@
+---
+// PDF 출력용 한 페이지 문서. 웹과 같은 MDX·데이터를 쓰고, 인터랙션은 정적 버전으로 바뀐다.
+// 개발 서버에서만 /print/ 경로로 등록한다(전화번호를 공개 사이트에 싣지 않기 위해). PDF는 scripts/pdf.mjs가 만든다.
+// 구성: 표지(소개·경력 요약·연락처) → 프로젝트 전체 목록 → 프로젝트 상세 → 역량·기술 → 이력. 간결한 카드 프로젝트는 목록에만 싣는다.
+import "../styles/global.css";
+import "../styles/prose.css";
+import "../styles/print.css";
+import { render } from "astro:content";
+import { Image } from "astro:assets";
+import StatTile from "../components/StatTile.astro";
+import ExperienceCard from "../components/ExperienceCard.astro";
+import QrLink from "../components/QrLink.astro";
+import Timeline from "../components/Timeline.astro";
+import SkillTable from "../components/SkillTable.astro";
+import { background, cvColumns } from "../data/cv";
+import { profile } from "../data/profile";
+import { getExperiences, publicationsFor } from "../lib/experiences";
+import photo from "../assets/profile/photo.jpg";
+
+Astro.locals.print = true;
+
+const experiences = await getExperiences();
+const detailed = await Promise.all(
+  experiences
+    .filter((e) => e.entry.data.card.size !== "compact")
+    .map(async (e) => ({
+      exp: e,
+      ...(await render(e.entry)),
+      pubs: await publicationsFor(e.id),
+    })),
+);
+const site = Astro.site!;
+const url = (p: string) => new URL(p, site).toString();
+const phone = process.env.PDF_PHONE;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>{profile.name} · 2D/3D 장면 재구성 엔지니어 포트폴리오</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+    />
+  </head>
+  <body class="print-doc">
+    <!-- 1. 표지 + 프로젝트 목록 -->
+    <section class="pg cover">
+      <div class="who">
+        <Image class="photo" src={photo} alt={`${profile.name} 증명사진`} width={180} format="jpg" quality={90} />
+        <div>
+          <p class="eyebrow">{profile.role}</p>
+          <h1>{profile.name} <span>{profile.nameEn}</span></h1>
+          <p class="headline">{profile.field}</p>
+          {profile.intro.map((s) => <p class="sub">{s}</p>)}
+          <p class="sub"><strong>{profile.stack.join(" · ")}</strong></p>
+          <ul class="bg">
+            {background.map((b) => (
+              <li>
+                <strong>{b.role}</strong> <span class="muted">({b.tag})</span> · {b.org} · <span class="num">{b.period}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      <div class="contact">
+        <dl>
+          <div><dt>이메일</dt><dd>{profile.email}</dd></div>
+          {phone && <div><dt>전화</dt><dd>{phone}</dd></div>}
+        </dl>
+        <QrLink href={url("/")} label="웹 포트폴리오 (비교 슬라이더 포함)" />
+      </div>
+      <h2 class="ptitle">{profile.sections.experiences.title} {experiences.length}건</h2>
+      <ul class="exp-grid">
+        {experiences.map((e) => <ExperienceCard exp={e} />)}
+      </ul>
+    </section>
+
+    <!-- 2. 프로젝트 상세 -->
+    {
+      detailed.map(({ exp, Content, pubs }) => {
+        const d = exp.entry.data;
+        return (
+          <section class="pg research">
+            <header class="rhead">
+              <div>
+                <p class="eyebrow">{exp.kind === "research" ? `${d.card.kind} · ${exp.entry.data.venues.join(" · ")}` : `${d.card.kind} · ${d.org}`}</p>
+                <h2 class="rtitle">{d.title}</h2>
+                <p class="headline">{d.headline}</p>
+                <dl class="meta">
+                  <div><dt>기간</dt><dd>{d.period}</dd></div>
+                  <div><dt>소속</dt><dd>{d.org}</dd></div>
+                  <div><dt>역할</dt><dd>{d.role}</dd></div>
+                  {d.team && <div><dt>협업</dt><dd>{d.team}</dd></div>}
+                  <div><dt>기술</dt><dd>{d.stack.join(", ")}</dd></div>
+                </dl>
+              </div>
+              <div class="rside">
+                {d.keyMetric && <StatTile value={d.keyMetric.value} label={d.keyMetric.label} condition={d.keyMetric.condition} />}
+                <QrLink href={url(exp.path)} label="웹에서 자세히 보기" size={64} />
+              </div>
+            </header>
+            <p class="summary">{d.summary}</p>
+            <article class="prose">
+              <Content />
+              {pubs.length > 0 && (
+                <>
+                  <h2>관련 논문</h2>
+                  <ol class="pubs">
+                    {pubs.map((p) => (
+                      <li>
+                        <strong>{p.data.title}</strong>
+                        {p.data.award && <span class="award">{p.data.award}</span>}
+                        <br />
+                        <span class="muted">
+                          {p.data.authors} · {p.data.venue} · {p.data.role}
+                          {p.data.doi && <> · DOI {p.data.doi}</>}
+                        </span>
+                      </li>
+                    ))}
+                  </ol>
+                </>
+              )}
+            </article>
+          </section>
+        );
+      })
+    }
+
+    <!-- 3. 역량·기술 → 이력 -->
+    <section class="pg">
+      <h2 class="ptitle">{profile.sections.skills.title}</h2>
+      <SkillTable />
+      <h2 class="ptitle">{profile.sections.cv.title}</h2>
+      <div class="cv-print">
+        <div>
+          {
+            cvColumns[0].map((g) => (
+              <>
+                <h3 class="cv-h">{g.title}</h3>
+                <Timeline items={g.items} />
+              </>
+            ))
+          }
+        </div>
+        <div class="cv-side">
+          {
+            cvColumns.slice(1).flat().map((g) => (
+              <div>
+                <h3 class="cv-h">{g.title}</h3>
+                <Timeline items={g.items} />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <p class="foot">
+        간결한 카드로 표시한 프로젝트의 상세 내용은 웹 포트폴리오에 있습니다.
+      </p>
+    </section>
+  </body>
+</html>

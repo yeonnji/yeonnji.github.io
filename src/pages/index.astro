@@ -1,0 +1,332 @@
+---
+// 홈: 소개(경력·연구활동 요약 포함) → 프로젝트 전체 목록 → 역량·기술 → 이력 → 연락처.
+// 프로젝트 설명은 카드에서 짧게, 자세한 내용은 각 상세 페이지에 둔다.
+import { existsSync } from "node:fs";
+import { Image } from "astro:assets";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ExperienceCard from "../components/ExperienceCard.astro";
+import Timeline from "../components/Timeline.astro";
+import SkillTable from "../components/SkillTable.astro";
+import { background, cvColumns } from "../data/cv";
+import { profile } from "../data/profile";
+import { getExperiences, categoryLabels } from "../lib/experiences";
+import { href } from "../lib/format";
+import photo from "../assets/profile/photo.jpg";
+
+const experiences = await getExperiences();
+const counts = Object.fromEntries(
+  Object.keys(categoryLabels).map((k) => [k, experiences.filter((e) => e.entry.data.card.categories.includes(k as never)).length]),
+);
+const hasResume = existsSync(`public${profile.resume}`);
+const sec = profile.sections;
+---
+
+<BaseLayout title={profile.name} description={profile.intro.join(" ")}>
+  <section class="intro container" aria-labelledby="intro-title">
+    <div class="id">
+      <Image class="photo" src={photo} alt={`${profile.name} 증명사진`} widths={[120, 240]} sizes="120px" format="webp" quality={88} loading="eager" />
+      <div>
+        <p class="eyebrow">{profile.role}</p>
+        <h1 id="intro-title">{profile.name} <span class="en">{profile.nameEn}</span></h1>
+        <p class="field">{profile.field}</p>
+      </div>
+    </div>
+    <div class="lead">{profile.intro.map((s) => <p>{s}</p>)}</div>
+    <p class="stack"><strong>{profile.stack.join(" · ")}</strong></p>
+    <ul class="bg" aria-label="경력·연구활동 요약">
+      {
+        background.map((b) => (
+          <li>
+            <p class="bg-role">
+              <span class="bg-tag">{b.tag}</span>
+              {b.role}
+            </p>
+            <p class="bg-org">
+              {b.org} · <span class="num">{b.period}</span>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section id="projects" class="section container" aria-labelledby="exp-title">
+    <header class="sec-head">
+      <h2 id="exp-title">{sec.experiences.title} <span class="count num">{experiences.length}</span></h2>
+      <p>{sec.experiences.lead}</p>
+    </header>
+    <div class="filters" role="group" aria-label="프로젝트 분야로 거르기" hidden>
+      <button type="button" data-filter="all" aria-pressed="true">전체 <span class="num">{experiences.length}</span></button>
+      {
+        Object.entries(categoryLabels).map(([k, label]) => (
+          <button type="button" data-filter={k} aria-pressed="false">
+            {label} <span class="num">{counts[k]}</span>
+          </button>
+        ))
+      }
+    </div>
+    <ul class="exp-grid">
+      {experiences.map((e) => <ExperienceCard exp={e} />)}
+    </ul>
+  </section>
+
+  <section id="skills" class="section container" aria-labelledby="skills-title">
+    <header class="sec-head">
+      <h2 id="skills-title">{sec.skills.title}</h2>
+      <p>{sec.skills.lead}</p>
+    </header>
+    <SkillTable />
+  </section>
+
+  <section id="cv" class="section container" aria-labelledby="cv-title">
+    <header class="sec-head">
+      <h2 id="cv-title">{sec.cv.title}</h2>
+    </header>
+    <div class="cv">
+      {
+        cvColumns.map((col) => (
+          <div>
+            {col.map((g) => (
+              <>
+                <h3 class="cv-h">{g.title}</h3>
+                <Timeline items={g.items} />
+              </>
+            ))}
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section id="contact" class="section container" aria-labelledby="contact-title">
+    <header class="sec-head">
+      <h2 id="contact-title">{sec.contact.title}</h2>
+    </header>
+    <dl class="contact">
+      <div><dt>이메일</dt><dd><a href={`mailto:${profile.email}`}>{profile.email}</a></dd></div>
+      {hasResume && <div><dt>이력서</dt><dd><a href={href(profile.resume)}>PDF 내려받기</a></dd></div>}
+    </dl>
+  </section>
+</BaseLayout>
+
+<script>
+  // 분야 거르기. 스크립트가 없으면 버튼이 숨겨진 채로 모든 프로젝트가 보인다.
+  const bar = document.querySelector<HTMLElement>(".filters");
+  const items = document.querySelectorAll<HTMLElement>(".exp-grid > li");
+  if (bar) {
+    bar.hidden = false;
+    bar.addEventListener("click", (ev) => {
+      const btn = (ev.target as HTMLElement).closest("button");
+      if (!btn) return;
+      const f = btn.dataset.filter!;
+      bar.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
+      items.forEach((li) => (li.hidden = f !== "all" && !li.dataset.cat!.split(" ").includes(f)));
+    });
+  }
+</script>
+
+<style>
+  .intro {
+    padding-block: var(--sp-7) var(--sp-5);
+  }
+  /* 사진과 지원 직무·이름·분야를 한 줄로, 설명은 그 아래 사진 왼쪽 끝부터 */
+  .id {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sp-5);
+    align-items: center;
+  }
+  .intro :global(.photo) {
+    width: 120px;
+    height: 160px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    border: 1px solid var(--c-border);
+  }
+  h1 {
+    font-size: var(--fs-3xl);
+    margin: var(--sp-1) 0 var(--sp-1);
+  }
+  .en {
+    font-size: var(--fs-lg);
+    font-weight: 500;
+    color: var(--c-text-3);
+    margin-left: var(--sp-2);
+  }
+  .field {
+    font-size: var(--fs-lg);
+    font-weight: 600;
+    color: var(--c-text);
+  }
+  .lead {
+    margin-top: var(--sp-5);
+    color: var(--c-text-2);
+  }
+  /* 소개 문단 사이 10px */
+  .lead p + p {
+    margin-top: 0.625rem;
+  }
+  .stack {
+    margin-top: var(--sp-3);
+    color: var(--c-text);
+  }
+  .bg {
+    list-style: none;
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, max-content));
+    gap: var(--sp-2) var(--sp-6);
+  }
+  .bg li {
+    padding-left: var(--sp-3);
+    border-left: 2px solid var(--c-border-strong);
+  }
+  .bg-role {
+    font-weight: 700;
+    line-height: var(--lh-snug);
+  }
+  .bg-tag {
+    font-size: var(--fs-2xs);
+    font-weight: 600;
+    color: var(--c-text-3);
+    margin-right: var(--sp-2);
+    vertical-align: 1px;
+  }
+  .bg-org {
+    font-size: var(--fs-xs);
+    color: var(--c-text-2);
+    line-height: var(--lh-snug);
+  }
+  .section {
+    padding-top: var(--sp-7);
+  }
+  /* 프로젝트 · 역량·기술 · 이력 · 연락처 사이: PC 80px, 휴대폰 64px */
+  .section + .section {
+    padding-top: clamp(4rem, 3rem + 3vw, 5rem);
+  }
+  .sec-head {
+    max-width: var(--w-prose);
+    margin-bottom: var(--sp-4);
+  }
+  .sec-head h2 {
+    font-size: var(--fs-2xl);
+    margin-bottom: var(--sp-1);
+  }
+  .count {
+    font-size: var(--fs-lg);
+    color: var(--c-text-3);
+    font-weight: 500;
+  }
+  .sec-head p {
+    color: var(--c-text-2);
+  }
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-4);
+  }
+  .filters[hidden] {
+    display: none;
+  }
+  .filters button {
+    font: inherit;
+    font-size: var(--fs-sm);
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface);
+    color: var(--c-text-2);
+    cursor: pointer;
+    min-height: 36px;
+  }
+  .filters button[aria-pressed="true"] {
+    background: var(--c-text);
+    border-color: var(--c-text);
+    color: #fff;
+  }
+  .filters .num {
+    opacity: 0.7;
+    margin-left: 2px;
+  }
+  .exp-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-4);
+  }
+  .exp-grid > :global(li[hidden]) {
+    display: none;
+  }
+  .cv {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--sp-6) var(--sp-7);
+    align-items: start;
+  }
+  .cv > div {
+    display: grid;
+    gap: var(--sp-2);
+  }
+  /* 소제목(경력·학력 등)은 안의 활동 제목(17px)보다 한 단계 크게 */
+  .cv-h {
+    font-size: var(--fs-lg);
+    padding-bottom: var(--sp-2);
+    margin-bottom: var(--sp-2);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .cv-h:not(:first-child) {
+    margin-top: var(--sp-4);
+  }
+  .contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4) var(--sp-7);
+    margin: 0;
+  }
+  .contact dt {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .contact dd {
+    margin: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 960px) {
+    .exp-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* 휴대폰: 사진을 작게 줄여 소개 높이를 줄인다 */
+  @media (max-width: 600px) {
+    .intro {
+      padding-top: var(--sp-5);
+    }
+    .id {
+      gap: var(--sp-4);
+    }
+    .intro :global(.photo) {
+      width: 72px;
+      height: 96px;
+    }
+    .field {
+      font-size: var(--fs-base);
+    }
+    .lead {
+      margin-top: var(--sp-4);
+    }
+    .bg {
+      grid-template-columns: 1fr;
+    }
+    .exp-grid {
+      grid-template-columns: 1fr;
+    }
+    .cv {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

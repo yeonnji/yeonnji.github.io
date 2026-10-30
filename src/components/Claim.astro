@@ -1,0 +1,29 @@
+---
+// claims.yaml의 문장을 그대로 출력한다. 확인되지 않은 주장은 빌드를 멈춘다.
+import { getEntry } from "astro:content";
+
+interface Props {
+  id: string;
+  /** scoped 주장의 조건을 문장 뒤에 붙일지 */
+  scope?: boolean;
+}
+
+const { id, scope = true } = Astro.props;
+const entry = await getEntry("claims", id);
+if (!entry) throw new Error(`claims.yaml에 없는 주장: ${id}`);
+if (entry.data.status === "unverified") {
+  throw new Error(`확인되지 않은 주장은 본문에 쓸 수 없습니다: ${id}`);
+}
+const { text, status } = entry.data;
+---
+
+<span class="claim" data-claim={id}>{text}</span>{
+  status === "scoped" && scope && <span class="scope"> ({entry.data.scope})</span>
+}
+
+<style>
+  .scope {
+    color: var(--c-text-3);
+    font-size: 0.9em;
+  }
+</style>

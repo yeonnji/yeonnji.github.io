@@ -1,0 +1,49 @@
+---
+import type { MarkdownHeading } from "astro";
+
+interface Props {
+  headings: MarkdownHeading[];
+}
+const items = Astro.props.headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+
+<nav class="toc" aria-label="이 페이지 목차">
+  <p class="eyebrow">목차</p>
+  <ol>
+    {
+      items.map((h) => (
+        <li class={`d${h.depth}`}>
+          <a href={`#${h.slug}`}>{h.text}</a>
+        </li>
+      ))
+    }
+  </ol>
+</nav>
+
+<style>
+  .toc {
+    position: sticky;
+    top: 80px;
+    font-size: var(--fs-sm);
+  }
+  ol {
+    list-style: none;
+    margin: var(--sp-2) 0 0;
+    padding: 0;
+    border-left: 1px solid var(--c-border);
+  }
+  li a {
+    display: block;
+    padding: 3px 0 3px var(--sp-3);
+    color: var(--c-text-3);
+    text-decoration: none;
+    line-height: 1.45;
+  }
+  li a:hover {
+    color: var(--c-accent-strong);
+  }
+  .d3 a {
+    padding-left: var(--sp-5);
+    font-size: var(--fs-xs);
+  }
+</style>

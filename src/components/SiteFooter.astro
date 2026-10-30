@@ -1,0 +1,24 @@
+---
+// 한 줄 푸터. 이메일은 연락처 영역에만 싣고, 연구 결과 안내는 각 연구 상세의 평가 조건에 둔다.
+import { profile } from "../data/profile";
+
+const year = 2026;
+---
+
+<footer class="site-footer">
+  <p class="container inner">© {year} {profile.name} · {profile.nameEn}</p>
+</footer>
+
+<style>
+  .site-footer {
+    margin-top: var(--sp-7);
+    border-top: 1px solid var(--c-border);
+    background: var(--c-surface);
+  }
+  .inner {
+    padding-block: var(--sp-4);
+    text-align: center;
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+</style>

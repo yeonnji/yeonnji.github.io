@@ -1,0 +1,42 @@
+---
+interface Props {
+  value: string;
+  label: string;
+  /** 평가 조건. 수치와 같은 타일 안에 항상 보인다. */
+  condition: string;
+}
+const { value, label, condition } = Astro.props;
+---
+
+<div class="tile">
+  <p class="value num">{value}</p>
+  <p class="label">{label}</p>
+  <p class="condition">{condition}</p>
+</div>
+
+<style>
+  .tile {
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    padding: var(--sp-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-1);
+  }
+  .value {
+    font-size: var(--fs-2xl);
+    font-weight: 700;
+    color: var(--c-accent-strong);
+    line-height: 1.2;
+  }
+  .label {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .condition {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    line-height: 1.55;
+  }
+</style>

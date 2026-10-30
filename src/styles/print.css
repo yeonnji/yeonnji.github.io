@@ -1,0 +1,295 @@
+/* PDF 출력(/print) 전용. A4 기준. */
+@page {
+  size: A4;
+  margin: 13mm 13mm 15mm;
+}
+
+body.print-doc {
+  --fs-2xs: 7pt;
+  --fs-xs: 7.6pt;
+  --fs-sm: 8.6pt;
+  --fs-base: 9pt;
+  --fs-md: 9.4pt;
+  --fs-lg: 10.6pt;
+  --fs-xl: 12.5pt;
+  --fs-2xl: 15pt;
+  --fs-3xl: 22pt;
+  --sp-5: 10px;
+  --sp-6: 14px;
+  --sp-7: 18px;
+  background: #fff;
+  font-size: var(--fs-md);
+  line-height: 1.55;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.print-doc .pg + .pg {
+  break-before: page;
+}
+
+/* 표지 */
+.print-doc .cover h1 {
+  font-size: var(--fs-3xl);
+  margin: 4px 0 6px;
+}
+.print-doc .cover h1 span {
+  font-size: var(--fs-lg);
+  font-weight: 400;
+  color: var(--c-text-3);
+}
+.print-doc .headline {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.print-doc .sub,
+.print-doc .summary,
+.print-doc .lead {
+  color: var(--c-text-2);
+  margin: 6px 0;
+}
+.print-doc .stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+}
+.print-doc .toc-print ol {
+  margin: 4px 0 10px;
+  padding-left: 1.2em;
+}
+.print-doc .contact {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--c-border);
+  padding-top: 10px;
+}
+.print-doc .contact dl {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+.print-doc .contact dl div {
+  display: grid;
+  grid-template-columns: 5em 1fr;
+}
+.print-doc dt {
+  color: var(--c-text-3);
+}
+.print-doc dd {
+  margin: 0;
+}
+
+/* 연구 머리 */
+.print-doc .rhead {
+  display: grid;
+  grid-template-columns: 1fr 190px;
+  gap: 14px;
+  border-bottom: 1px solid var(--c-border);
+  padding-bottom: 8px;
+}
+.print-doc .rtitle {
+  font-size: var(--fs-2xl);
+  margin: 2px 0 4px;
+}
+.print-doc .rside {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.print-doc .meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 12px;
+  margin: 6px 0 0;
+  font-size: var(--fs-sm);
+}
+
+/* 본문 흐름 */
+.print-doc .prose h2 {
+  margin: 14px 0 6px;
+  padding-top: 0;
+  break-after: avoid;
+}
+.print-doc .prose h3 {
+  margin: 10px 0 4px;
+  break-after: avoid;
+}
+.print-doc .prose p,
+.print-doc .prose ul,
+.print-doc .prose ol {
+  margin-bottom: 6px;
+}
+.print-doc figure,
+.print-doc table,
+.print-doc .callout,
+.print-doc .eq,
+.print-doc li {
+  break-inside: avoid;
+}
+.print-doc figure {
+  margin-block: 8px;
+}
+/* 인쇄본 그림 폭: 결과 이미지가 페이지를 혼자 차지하지 않게 줄인다 */
+.print-doc .fig {
+  max-width: 68%;
+}
+.print-doc .fig.wide {
+  max-width: 100%;
+}
+.print-doc .cover .fig {
+  max-width: 82%;
+}
+.print-doc .beta-print {
+  max-width: 62%;
+}
+.print-doc details > summary {
+  list-style: none;
+}
+.print-doc details > summary::-webkit-details-marker {
+  display: none;
+}
+.print-doc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 프로젝트·기타 */
+.print-doc .ptitle {
+  font-size: var(--fs-xl);
+  margin: 14px 0 6px;
+}
+.print-doc .ptitle:first-child {
+  margin-top: 0;
+}
+.print-doc .cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+.print-doc .minor {
+  font-size: var(--fs-md);
+  margin: 12px 0 4px;
+}
+.print-doc .lines,
+.print-doc .pubs,
+.print-doc .approach {
+  margin: 0;
+  padding-left: 1.2em;
+  font-size: var(--fs-sm);
+}
+.print-doc .lines li,
+.print-doc .pubs li,
+.print-doc .approach li {
+  margin-bottom: 4px;
+}
+.print-doc .simple-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.print-doc .simple-table th,
+.print-doc .simple-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 3px 6px;
+  border-bottom: 1px solid var(--c-border);
+}
+.print-doc .simple-table th {
+  white-space: nowrap;
+  font-weight: 600;
+}
+.print-doc .award {
+  margin-left: 6px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  color: var(--c-accent-strong);
+}
+.print-doc .muted {
+  color: var(--c-text-3);
+  font-size: var(--fs-xs);
+}
+.print-doc .foot {
+  margin-top: 14px;
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+
+/* 이력 타임라인 */
+.print-doc .cv-print {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 18px;
+}
+.print-doc .cv-side {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+.print-doc .cv-h {
+  font-size: var(--fs-md);
+  margin: 0 0 6px;
+  padding-bottom: 3px;
+  border-bottom: 1px solid var(--c-border);
+}
+.print-doc .tl > li {
+  padding-bottom: 8px;
+}
+
+/* 표지 소개와 경험 목록 */
+.print-doc .cover .who {
+  display: grid;
+  grid-template-columns: 30mm 1fr;
+  gap: 14px;
+  align-items: center;
+}
+.print-doc .cover .photo {
+  width: 30mm;
+  height: 40mm;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--c-border);
+}
+.print-doc .cover .contact {
+  margin: 10px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--c-border);
+}
+.print-doc .exp-grid {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+}
+.print-doc .exp-grid > li {
+  break-inside: avoid;
+}
+.print-doc .exp-grid .body {
+  padding: 6px 8px;
+  gap: 3px;
+}
+.print-doc .exp-grid h3 {
+  font-size: var(--fs-sm);
+}
+.print-doc .exp-grid .blurb {
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+.print-doc .exp-grid .tag-list {
+  display: none;
+}
+
+/* 표지의 경력·연구활동 요약 */
+.print-doc .cover .bg {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  font-size: var(--fs-sm);
+}
+.print-doc .cover .bg .muted {
+  color: var(--c-text-3);
+}

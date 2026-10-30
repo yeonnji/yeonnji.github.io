@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.astro/
+.tools/
+.claude/
+.DS_Store
+*.log
+
+# 공개 확인 전 그림. 공개 저장소에 올리면 배포와 같으므로 커밋하지 않는다.
+src/assets/figures/review/
+
+# 뷰어 테스트용 로컬 PLY (연구 결과·합성 데이터). 커밋하지 않는다.
+.lab/
+
+# PDF 출력물 (전화번호 포함 가능)
+pdf/

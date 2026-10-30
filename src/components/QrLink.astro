@@ -1,0 +1,45 @@
+---
+// 인쇄본에서 웹 페이지로 가는 QR 코드와 주소. 빌드 시점에 SVG로 만든다.
+import QRCode from "qrcode";
+
+interface Props {
+  href: string;
+  label: string;
+  size?: number;
+}
+const { href, label, size = 76 } = Astro.props;
+const svg = await QRCode.toString(href, { type: "svg", margin: 0, errorCorrectionLevel: "M", color: { dark: "#17181a", light: "#ffffff" } });
+---
+
+<a class="qr" href={href}>
+  <span class="code" style={`width:${size}px;height:${size}px`} set:html={svg} aria-hidden="true" />
+  <span class="txt"><span class="label">{label}</span><span class="url">{href.replace(/^https?:\/\//, "")}</span></span>
+</a>
+
+<style>
+  .qr {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--c-text);
+    break-inside: avoid;
+  }
+  .code :global(svg) {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .txt {
+    display: grid;
+  }
+  .label {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+  }
+  .url {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    word-break: break-all;
+  }
+</style>

@@ -1,0 +1,172 @@
+---
+title: "병원 이상행동 감지 결과의 관제 연동"
+headline: "영상과 라벨의 시간축 불일치를 찾아 데이터를 다시 만들고, 실시간 추론을 막지 않는 이벤트 전송을 구현해 병원 현장에서 전달을 확인했습니다."
+summary: "정신병동 CCTV 영상에서 이상행동을 감지해 병원 관제시스템으로 알리는 산학과제입니다. 의료진 검증 라벨과 영상의 시간 불일치를 직접 대조해 재처리했고, C++로 판정·전송 로직을 구현했습니다. 전송은 별도 스레드에서 처리하고 반복 알림을 제한했으며, 요청·응답을 로그로 남겼습니다."
+card:
+  order: 5
+  size: normal
+  kind: "산학과제"
+  todo:
+    - "재처리한 영상·라벨 규모"
+    - "이벤트 판정 기준값(alertThreshold)"
+    - "이벤트 수신 화면 이미지"
+  blurb: "영상과 라벨의 시간 불일치를 찾아 데이터를 재처리하고, 추론을 멈추지 않는 C++ 이벤트 전송을 구현해 병원 현장에서 관제시스템 전달을 확인했습니다."
+  role: "데이터 검증 · C++ 관제 연동 (모델은 박사과정 담당)"
+  period: "2025.08 – 2026.01"
+  tags: ["Python", "C++", "REST", "멀티스레딩"]
+  categories: ["ai", "system"]
+  diagram:
+    - { label: "병동 CCTV" }
+    - { label: "이상행동 추론 모델" }
+    - { label: "이벤트 판정·전송", mine: true }
+    - { label: "병원 관제시스템" }
+period: "2025.08 – 2026.01"
+org: "인하대학교 미디어인공지능연구실 · 병원 산학과제"
+role: "데이터 정합성 검증·전처리 · 모델 실험 지원 · C++ 관제 연동 · 현장 기술지원"
+team: "박사과정 연구원 2명(모델), 병원 의료진(라벨 검증), 병원 전산팀, 관제시스템 담당자"
+stack: ["Python", "C++", "REST API", "cpp-httplib", "nlohmann/json", "멀티스레딩"]
+---
+
+import RoleTable from "../../components/RoleTable.astro";
+import FlowDiagram from "../../components/FlowDiagram.astro";
+
+## 해결하려던 문제
+
+- **데이터:** 의료진이 검증한 이상행동 구간 라벨과 원본 영상의 시간이 일부 맞지 않았습니다. 그대로 자르면 실제와 다른 구간이 학습·평가 데이터에 섞입니다.
+- **실시간 처리:** 감지 결과를 기존 병원 관제시스템으로 보내야 했지만, 네트워크 요청이 영상 추론을 멈추게 해서는 안 됐습니다. 프레임마다 알림이 나가는 것도 막아야 했습니다.
+- **네트워크:** 병원 보안망에서는 전송이 실패했을 때 프로그램 문제인지 방화벽·보안 설정 문제인지 바로 구분하기 어려웠습니다.
+
+### 시스템 구성
+
+<FlowDiagram
+  title="감지에서 관제 알림까지"
+  nodes={[
+    { label: "병동 CCTV 영상", kind: "ext" },
+    { label: "이상행동 추론 모델", sub: "박사과정 연구원 수정 HAT 모델", kind: "team" },
+    { label: "이벤트 판정·전송", sub: "C++ EventProcessor · 본인 구현", kind: "mine" },
+    { label: "병원 관제시스템", sub: "기존 시스템", kind: "ext" },
+  ]}
+  edges={["프레임", "프레임별 판정 라벨", "REST · JSON (별도 스레드)"]}
+  caption="환자 영상과 병원 내부 주소·장비 코드는 싣지 않았습니다."
+/>
+
+## 담당 범위와 협업
+
+<RoleTable
+  mine={[
+    "라벨 구간과 원본 영상 타임스탬프 대조, 불일치 보고, 수정 라벨 기준 재처리 (Python)",
+    "ECCV24-HAT 실험 환경 구성, 수정 모델의 파라미터 변경 실험과 논문용 비교실험",
+    "C++ 이벤트 판정·REST 전송: 판정 창, 반복 알림 대기, 별도 스레드 전송, 요청·응답 로그",
+    "현장 방문 전 네트워크 점검 준비, 병원 전산팀과 보안망 문제 대응",
+  ]}
+  others={[
+    "이상행동 인식 모델 수정·설계 (박사과정 연구원 2명)",
+    "이상행동 구간 라벨 검증 (병원 의료진)",
+    "관제시스템 수신부와 병원 보안망 설정 (병원 측)",
+  ]}
+  othersTitle="다른 담당자"
+/>
+
+## 주요 판단과 선택 이유
+
+- **코드가 오류 없이 끝난 것을 데이터가 맞다는 근거로 보지 않았습니다.** 잘라 낸 결과를 원본 영상 타임스탬프와 직접 대조했습니다.
+- **라벨은 임의로 고치지 않았습니다.** 라벨은 의료진이 검증한 기준이므로, 불일치를 보고하고 수정된 라벨 문서를 받아 같은 기준으로 다시 처리했습니다.
+- **프레임 하나가 아니라 일정 시간의 비율로 판정했습니다.** 프레임마다 알림을 보내면 같은 상황에서 알림이 쏟아지고, 표본이 1~2개뿐일 때는 오판하기 쉽습니다.
+- **전송은 영상 처리와 다른 스레드에서 했습니다.** 관제 서버가 느리거나 응답하지 않아도 추론 루프가 기다리지 않게 하기 위해서입니다.
+- **요청과 응답을 모두 로그로 남겼습니다.** 병원 보안망에서는 실패 원인이 프로그램인지 방화벽·보안 설정인지 바로 알기 어려워, 판단 근거를 남겨 두려 했습니다.
+
+## 구현 과정
+
+### 1. 처리 결과를 원본 시간축과 직접 대조
+
+잘라 낸 결과를 원본 영상 타임스탬프와 비교해 불일치를 찾았고, 의료진에게 보고해 수정된 라벨 문서를 받은 뒤 같은 기준으로 다시 처리했습니다.
+
+<FlowDiagram
+  title="라벨 정합성 확인과 재처리"
+  variant="steps"
+  nodes={[
+    { label: "의료진 검증 라벨", sub: "이상행동 구간" },
+    { label: "Python 영상 분할" },
+    { label: "원본 타임스탬프와 대조", sub: "불일치 발견" },
+    { label: "불일치 보고", sub: "임의 수정하지 않음" },
+    { label: "수정 라벨 수령" },
+    { label: "같은 기준으로 재처리" },
+  ]}
+/>
+
+### 2. 실시간 처리와 외부 통신 분리
+
+최근 일정 시간의 판정을 모아 비율로 판단하고, 전송은 별도 스레드에서 처리합니다.
+
+<table class="simple">
+  <thead>
+    <tr><th>설정 (코드 값)</th><th>값</th><th>이유</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>판정 창</td><td>5초</td><td>최근 프레임 판정을 모아 이상행동 비율을 계산</td></tr>
+    <tr><td>최소 판단 시간</td><td>2초</td><td>표본이 1~2개뿐일 때 바로 알림이 나가는 오판 방지</td></tr>
+    <tr><td>알림 대기 (cooldown)</td><td>60초</td><td>같은 상황에서 알림이 반복 전송되는 것을 제한</td></tr>
+    <tr><td>연결 제한 시간</td><td>5초</td><td>관제 서버가 응답하지 않을 때 전송 스레드가 무한히 기다리지 않도록</td></tr>
+  </tbody>
+</table>
+
+실제 코드를 요약한 핵심 부분입니다(서버 주소·경로·장비 코드는 지웠습니다).
+
+```cpp
+void EventProcessor::CheckForAlert() {
+  auto now = std::chrono::steady_clock::now();
+  if (now - lastAlertTime_ < kCooldownDuration) return;     // 60초 안에는 다시 보내지 않음
+  auto span = frameWindow_.back().first - frameWindow_.front().first;
+  if (span < kMinWindowDurationForAlert) return;            // 2초 이상 쌓인 뒤에만 판단
+
+  // 창 안에서 이상행동 프레임 비율과 가장 많이 나온 이상행동 종류를 센다
+  double proportion = static_cast<double>(alertFrameCount) / frameWindow_.size();
+  if (proportion >= alertThreshold_) {
+    SendRestApiAlert(dominantEvent);
+    lastAlertTime_ = now;
+    clearWindow();
+  }
+}
+
+void EventProcessor::SendRestApiAlert(int64_t eventId) {
+  std::thread([=]() {                                       // 영상 처리 스레드를 막지 않음
+    httplib::Client cli(host, port);
+    cli.set_connection_timeout(5, 0);
+    log("[API] Send alert. (Request: " + body + ")");
+    auto res = cli.Post(path, body, "application/json");
+    log(res && res->status == 200 ? "[API] Data sent successfully ..."
+                                  : "[API-ERROR] ...");     // 실패 원인을 로그로 남김
+  }).detach();
+}
+```
+
+요청과 응답은 콘솔과 별도 API 로그 파일에 함께 기록해, 전송 실패 시 어느 단계에서 멈췄는지 확인할 수 있게 했습니다.
+
+```text
+[API] Send alert. (Request: {"Code":"<장비 코드>","Date":"2025-11-12","Info":"abnormal","Time":"21:41:48"})
+[API] Data sent successfully (Response: "Y/전송완료")
+[API] Send alert. (Request: {"Code":"<장비 코드>","Date":"2025-11-12","Info":"abnormal","Time":"21:42:48"})
+[API] Data sent successfully (Response: "Y/전송완료")
+```
+
+같은 상황에서 알림이 60초 간격으로만 전송되는 것을 로그로 확인할 수 있습니다.
+
+### 3. 현장에서 프로그램과 보안망 문제를 나눠 대응
+
+현장 방문 전에 Linux `curl` 등으로 관제 서버 연결을 확인하는 방법을 준비했습니다. 병원에서는 애플리케이션 문제와 방화벽·보안 설정 문제를 분리한 뒤 전산팀과 함께 대응했습니다. [라이다 현장](/projects/lidar-ops/)에서 익힌 구간별 점검 방식을 그대로 썼습니다.
+
+## 결과와 검증
+
+- 재처리한 데이터로 모델 실험과 비교실험을 진행했습니다.
+- 의료진과 배우가 참여한 현장 검증에서 이상행동 감지와 관제시스템 이벤트 전달을 확인했습니다.
+- 전송 결과가 요청·응답 로그로 남아, 실패 시 프로그램·네트워크 중 어느 쪽 문제인지 확인할 근거가 생겼습니다.
+
+## 한계와 추가 과제
+
+<div class="callout limit">
+
+- 감지 정확도, FPS, 지연 시간의 확정된 개선 수치는 없습니다. 위 표의 초·횟수는 코드 설정값이며 성능 지표가 아닙니다.
+- 인식 모델은 박사과정 연구원들이 수정했으며, 본인은 실험과 연동을 맡았습니다.
+- 환자 영상과 병원 내부 정보는 공개하지 않습니다.
+
+</div>

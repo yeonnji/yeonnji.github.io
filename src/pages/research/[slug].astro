@@ -1,0 +1,45 @@
+---
+import { getCollection, render } from "astro:content";
+import DetailLayout from "../../layouts/DetailLayout.astro";
+import { profile } from "../../data/profile";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("research");
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const d = entry.data;
+
+const articleLd = {
+  "@context": "https://schema.org",
+  "@type": "ScholarlyArticle",
+  headline: d.title,
+  description: d.summary,
+  author: { "@type": "Person", name: profile.name },
+  inLanguage: "ko",
+};
+---
+
+<DetailLayout
+  id={entry.id}
+  title={d.title}
+  headline={d.headline}
+  summary={d.summary}
+  eyebrow={`${d.card.kind} · ${d.venues.join(" · ")}`}
+  meta={[
+    { label: "기간", value: d.period },
+    { label: "소속", value: d.org },
+    { label: "역할", value: d.role },
+    { label: "구성", value: d.team },
+  ]}
+  stack={d.stack}
+  links={d.links}
+  keyMetric={d.keyMetric}
+  todo={d.card.todo}
+  headings={headings}
+  jsonLd={articleLd}
+>
+  <Content />
+</DetailLayout>

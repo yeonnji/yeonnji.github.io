@@ -1,0 +1,54 @@
+- id: jok2026
+  order: 1
+  year: 2026
+  venue: "정보과학회논문지 53(4), 304–310"
+  title: "3차원 가우시안 스플래팅에서의 조명 표현 개선법"
+  titleEn: "Improving Illumination Representation in 3D Gaussian Splatting"
+  authors: "지연, 이은석, 신병석"
+  role: "제1저자"
+  doi: "10.5626/JOK.2026.53.4.304"
+  experience: illumination-3dgs
+  links:
+    - { label: "DOI", href: "https://doi.org/10.5626/JOK.2026.53.4.304" }
+    - { label: "코드", href: "https://github.com/yeonnji/paper-jok2026" }
+
+- id: mue2026
+  order: 2
+  year: 2026
+  venue: "MUE 2026 (Int'l Conf. on Multimedia and Ubiquitous Engineering)"
+  title: "Removal of Specular Highlights in Endoscopic Images using 3D Gaussian Splatting"
+  authors: "Yeon Ji, Jae-Hyeong Kim, Byeong-Seok Shin"
+  role: "제1저자 · 동영상 발표"
+  award: "Best Paper Award"
+  experience: endoscopic-specular
+  links:
+    - { label: "코드", href: "https://github.com/yeonnji/paper-mue2026" }
+
+- id: thesis2026
+  order: 3
+  year: 2026
+  venue: "인하대학교 공학석사학위논문 (2026.08)"
+  title: "3차원 가우시안 스플래팅의 조명 복원 기법 연구"
+  authors: "지연"
+  role: "학위논문"
+  experience: illumination-3dgs
+
+- id: kcc2025
+  order: 4
+  year: 2025
+  venue: "한국컴퓨터종합학술대회 (KCC 2025)"
+  title: "조도 중심 SfM 기법을 활용한 고정밀 Gaussian Splatting"
+  titleEn: "High-Precision Gaussian Splatting using Brightness-driven Structure-from-Motion"
+  authors: "지연, 이은석, 신병석"
+  role: "제1저자 · 직접 발표"
+  award: "우수논문상"
+  experience: illumination-3dgs
+
+- id: kingpc2025
+  order: 5
+  year: 2025
+  venue: "한국차세대컴퓨팅학회 학술대회 (2025.05)"
+  title: "A Parallel Scheduling Method for Large-Scale NPC Management Based on State Classification"
+  authors: "Eun-Kyung Jo, Yeon Ji, Byeong-Seok Shin"
+  role: "제2저자 · Unity DOTS 구현·실험 지원"
+  experience: npc-parallel

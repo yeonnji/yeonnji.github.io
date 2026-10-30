@@ -1,0 +1,304 @@
+---
+// 프로젝트 상세 페이지 공통 틀: 머리(요약·기간·소속·역할·기술) + 본문 + 관련 논문·자료 + 이전/다음 프로젝트.
+// 본문 순서: 해결하려던 문제 → 담당 범위와 협업 → 주요 판단과 선택 이유 → 구현·실험 과정 → 결과와 검증 → 한계와 추가 과제.
+import type { MarkdownHeading } from "astro";
+import BaseLayout from "./BaseLayout.astro";
+import Toc from "../components/Toc.astro";
+import StatTile from "../components/StatTile.astro";
+import { href } from "../lib/format";
+import { neighbors, publicationsFor } from "../lib/experiences";
+import "../styles/prose.css";
+
+interface Props {
+  /** 경험 id. 목록 복귀 위치·관련 논문·이전/다음 경험에 쓴다 */
+  id: string;
+  title: string;
+  headline: string;
+  summary: string;
+  eyebrow: string;
+  meta: { label: string; value: string }[];
+  stack: string[];
+  links: { label: string; href: string }[];
+  keyMetric?: { value: string; label: string; condition: string };
+  /** 아직 보완하지 못한 내용 */
+  todo?: string[];
+  headings: MarkdownHeading[];
+  jsonLd?: Record<string, unknown>;
+}
+const p = Astro.props;
+const back = href(`/#exp-${p.id}`);
+const pubs = await publicationsFor(p.id);
+const { prev, next } = await neighbors(p.id);
+const hasRelated = pubs.length > 0 || p.links.length > 0;
+const headings = hasRelated ? [...p.headings, { depth: 2, slug: "related", text: "관련 논문·코드·자료" }] : p.headings;
+---
+
+<BaseLayout title={p.title} description={p.summary} type="article" jsonLd={p.jsonLd}>
+  <div class="container">
+    <p class="back"><a href={back}>← 전체 프로젝트 목록</a></p>
+    <header class="head">
+      <p class="eyebrow">{p.eyebrow}</p>
+      <h1>{p.title}</h1>
+      <p class="headline">{p.headline}</p>
+      <dl class="meta">
+        {p.meta.map((m) => <div><dt>{m.label}</dt><dd>{m.value}</dd></div>)}
+      </dl>
+      <ul class="tag-list" aria-label="사용 기술">
+        {p.stack.map((s) => <li class="tag">{s}</li>)}
+      </ul>
+      {
+        p.links.length > 0 && (
+          <p class="links">
+            {p.links.map((l) => (
+              <a href={l.href} rel="noopener">
+                {l.label} ↗
+              </a>
+            ))}
+          </p>
+        )
+      }
+      {
+        p.todo && p.todo.length > 0 && (
+          <aside class="todo" aria-label="수정 예정">
+            <p class="todo-h">수정 예정</p>
+            <ul>
+              {p.todo.map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+          </aside>
+        )
+      }
+      <div class:list={["key", { nometric: !p.keyMetric }]}>
+        {p.keyMetric && <StatTile value={p.keyMetric.value} label={p.keyMetric.label} condition={p.keyMetric.condition} />}
+        <p class="summary">{p.summary}</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <article class="prose">
+        <slot />
+        {
+          hasRelated && (
+            <section class="related" aria-labelledby="related">
+              <h2 id="related">관련 논문·코드·자료</h2>
+              {pubs.length > 0 && (
+                <ol class="pubs">
+                  {pubs.map((x) => (
+                    <li>
+                      <p class="pt">
+                        {x.data.title}
+                        {x.data.award && <span class="award">{x.data.award}</span>}
+                      </p>
+                      {x.data.titleEn && <p class="pen">{x.data.titleEn}</p>}
+                      <p class="pm">
+                        {x.data.authors} · {x.data.venue} · {x.data.role}
+                        {x.data.doi && <> · DOI <a href={`https://doi.org/${x.data.doi}`} rel="noopener">{x.data.doi}</a></>}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              )}
+              {p.links.length > 0 && (
+                <ul class="rlinks">
+                  {p.links.map((l) => (
+                    <li><a href={l.href} rel="noopener">{l.label} ↗</a></li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )
+        }
+      </article>
+      <aside class="side">
+        <Toc headings={headings} />
+      </aside>
+    </div>
+
+    <nav class="pager" aria-label="다른 프로젝트">
+      {prev ? <a class="prev" href={href(prev.path)}><span>이전 프로젝트</span>{prev.entry.data.title}</a> : <span />}
+      <a class="all" href={back}>전체 프로젝트 목록</a>
+      {next ? <a class="next" href={href(next.path)}><span>다음 프로젝트</span>{next.entry.data.title}</a> : <span />}
+    </nav>
+  </div>
+</BaseLayout>
+
+<style>
+  .back {
+    margin: var(--sp-5) 0 var(--sp-4);
+    font-size: var(--fs-sm);
+  }
+  .head {
+    max-width: 880px;
+    padding-bottom: var(--sp-6);
+    border-bottom: 1px solid var(--c-border);
+  }
+  h1 {
+    font-size: var(--fs-3xl);
+    margin: var(--sp-2) 0 var(--sp-3);
+  }
+  .headline {
+    font-size: var(--fs-lg);
+    color: var(--c-text-2);
+  }
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-3) var(--sp-5);
+    margin: var(--sp-5) 0 var(--sp-4);
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+  }
+  .meta dt {
+    color: var(--c-text-3);
+    font-size: var(--fs-xs);
+  }
+  .meta dd {
+    margin: 0;
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    margin-top: var(--sp-3);
+    font-size: var(--fs-sm);
+  }
+  .todo {
+    margin-top: var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px dashed var(--c-pending);
+    border-radius: var(--radius-sm);
+    background: var(--c-pending-bg);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+    color: var(--c-text-2);
+  }
+  .todo-h {
+    font-weight: 700;
+    color: var(--c-pending);
+    margin-bottom: 2px;
+  }
+  .todo ul {
+    margin: 0;
+    padding-left: 1.1em;
+  }
+  .key {
+    display: grid;
+    grid-template-columns: minmax(220px, 280px) 1fr;
+    gap: var(--sp-5);
+    align-items: center;
+    margin-top: var(--sp-5);
+  }
+  .summary {
+    color: var(--c-text-2);
+  }
+  .key.nometric {
+    grid-template-columns: 1fr;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, var(--w-prose)) 200px;
+    gap: var(--sp-7);
+    justify-content: space-between;
+    margin-top: var(--sp-6);
+  }
+  .related .pubs {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .related .pubs li {
+    padding: var(--sp-3) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  .pt {
+    font-weight: 600;
+  }
+  .pen {
+    font-size: var(--fs-xs);
+    color: var(--c-text-2);
+  }
+  .pm {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .award {
+    display: inline-block;
+    margin-left: var(--sp-2);
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--c-accent-strong);
+    background: var(--c-accent-soft);
+    padding: 0.05em 0.55em;
+    border-radius: 4px;
+    vertical-align: middle;
+  }
+  .rlinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2) var(--sp-5);
+    list-style: none;
+    padding: 0;
+    margin: var(--sp-4) 0 0;
+    font-weight: 600;
+  }
+  .pager {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: var(--sp-4);
+    align-items: center;
+    margin-top: var(--sp-7);
+    padding-top: var(--sp-5);
+    border-top: 1px solid var(--c-border);
+    font-size: var(--fs-sm);
+  }
+  .pager a {
+    text-decoration: none;
+  }
+  .pager .prev,
+  .pager .next {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--c-text);
+    font-weight: 600;
+  }
+  .pager .next {
+    text-align: right;
+  }
+  .pager span {
+    font-size: var(--fs-xs);
+    font-weight: 400;
+    color: var(--c-text-3);
+  }
+  .pager .all {
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid var(--c-border-strong);
+    border-radius: 999px;
+    color: var(--c-text);
+  }
+  @media (max-width: 640px) {
+    .pager {
+      grid-template-columns: 1fr 1fr;
+    }
+    .pager .all {
+      grid-column: 1 / -1;
+      grid-row: 1;
+      justify-self: center;
+    }
+  }
+  @media (max-width: 1000px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .side {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .key {
+      grid-template-columns: 1fr;
+    }
+  }
+
+</style>

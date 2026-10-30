@@ -1,0 +1,152 @@
+---
+// 역량 · 기술 · 실제 활용 범위를 한 줄에 함께 보여준다. 데스크톱은 표처럼 세 칸, 좁은 화면은 역량별 카드.
+// 관련 프로젝트 링크는 프로젝트 상세 페이지로 이동한다(없는 id면 빌드에서 실패).
+import { skills } from "../data/skills";
+import { getExperiences } from "../lib/experiences";
+import { href } from "../lib/format";
+
+const byId = new Map((await getExperiences()).map((e) => [e.id, e]));
+const rows = skills.map((s) => ({
+  ...s,
+  links: s.links.map((l) => {
+    const exp = byId.get(l.id);
+    if (!exp) throw new Error(`skills.ts: 없는 경험 id "${l.id}" (${s.name})`);
+    return { ...l, url: href(exp.path) };
+  }),
+}));
+---
+
+<div class="skills">
+  <div class="head" aria-hidden="true">
+    <span>역량</span><span>기술</span><span>실제 활용 범위</span>
+  </div>
+  <ul>
+    {
+      rows.map((s) => (
+        <li>
+          <h3>{s.name}</h3>
+          <div class="tech">
+            <span class="lbl">기술</span>
+            <p>{s.tech.join(" · ")}</p>
+          </div>
+          <div class="scope">
+            <span class="lbl">실제 활용 범위</span>
+            <p>{s.scope}</p>
+            <p class="rel">
+              <span class="visually-hidden">관련 프로젝트:</span>
+              {s.links.map((l) => (
+                <a href={l.url}>{l.label} →</a>
+              ))}
+            </p>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .skills {
+    --cols: 200px 240px minmax(0, 1fr);
+    border-top: 2px solid var(--c-text);
+  }
+  .head,
+  li {
+    display: grid;
+    grid-template-columns: var(--cols);
+    gap: var(--sp-5);
+  }
+  .head {
+    padding: var(--sp-2) 0;
+    border-bottom: 1px solid var(--c-border-strong);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    color: var(--c-text-3);
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    padding: var(--sp-4) 0;
+    border-bottom: 1px solid var(--c-border);
+  }
+  h3 {
+    font-size: var(--fs-md);
+    line-height: var(--lh-snug);
+  }
+  .tech p {
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    line-height: var(--lh-snug);
+    color: var(--c-text);
+  }
+  .scope p {
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+    color: var(--c-text-2);
+  }
+  .scope .rel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-1) var(--sp-4);
+    margin-top: var(--sp-2);
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+  .rel a {
+    text-decoration: none;
+  }
+  .rel a:hover {
+    text-decoration: underline;
+  }
+  .lbl {
+    display: none;
+  }
+
+  @media (max-width: 960px) {
+    .skills {
+      --cols: 180px minmax(0, 1fr);
+    }
+    .head {
+      display: none;
+    }
+    li {
+      grid-template-columns: var(--cols);
+      gap: var(--sp-2) var(--sp-5);
+    }
+    h3 {
+      grid-row: span 2;
+    }
+    .lbl {
+      display: block;
+      font-size: var(--fs-xs);
+      font-weight: 600;
+      color: var(--c-text-3);
+      margin-bottom: 2px;
+    }
+  }
+  /* 휴대폰: 역량별 카드 안에 기술 → 활용 범위 순서 */
+  @media (max-width: 600px) {
+    .skills {
+      border-top: 0;
+    }
+    ul {
+      display: grid;
+      gap: var(--sp-3);
+    }
+    li {
+      grid-template-columns: 1fr;
+      gap: var(--sp-3);
+      padding: var(--sp-4);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius);
+      background: var(--c-surface);
+    }
+    h3 {
+      grid-row: auto;
+      font-size: var(--fs-lg);
+    }
+  }
+</style>

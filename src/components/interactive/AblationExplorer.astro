@@ -1,0 +1,265 @@
+---
+// 모듈을 켜고 끄면 실제로 측정한 조건의 수치만 보여준다. 측정하지 않은 조합은 값을 만들지 않는다.
+import { getEntry } from "astro:content";
+
+interface Props {
+  ablationId: string;
+  /** 모든 모듈을 끈 조건(표준 3DGS)의 값을 가져올 표 */
+  baselineId: string;
+  modules: { key: string; label: string; desc: string }[];
+}
+const { ablationId, baselineId, modules } = Astro.props;
+const abl = (await getEntry("metrics", ablationId))?.data;
+const base = (await getEntry("metrics", baselineId))?.data;
+if (!abl || !base) throw new Error("ablation/baseline 표 없음");
+const baseRow = base.rows.find((r) => r.summary && !r.ours);
+if (!baseRow) throw new Error(`${baselineId}: 표준 3DGS 평균 행 없음`);
+
+const off = Object.fromEntries(modules.map((m) => [m.key, false]));
+const conditions = [
+  ...abl.rows.map((r) => {
+    if (!r.flags) throw new Error(`${ablationId}: flags 없는 행 ${r.method}`);
+    return { label: r.method, flags: r.flags, values: r.values, source: `${abl.source.doc} ${abl.source.location}` };
+  }),
+  { label: "표준 3DGS (모든 모듈 끔)", flags: off, values: baseRow.values, source: `${base.source.doc} ${base.source.location} 평균` },
+];
+const full = conditions.find((c) => modules.every((m) => c.flags[m.key]));
+if (!full) throw new Error("전체 모델 행 없음");
+const data = { columns: abl.columns, conditions, full: full.values, modules: modules.map((m) => m.key) };
+// 인쇄본에서는 바로 위의 Ablation 표가 같은 정보를 담으므로 그리지 않는다.
+const print = Astro.locals.print === true;
+---
+
+<section class="abl" data-abl aria-labelledby="abl-title" hidden={print}>
+  <h4 id="abl-title">모듈을 켜고 끄며 보기</h4>
+  <p class="lead">측정한 조건은 5가지(전체 모델, 모듈 하나씩 뺀 3개, 표준 3DGS)입니다. 그 밖의 조합을 고르면 값 대신 "측정하지 않음"을 표시합니다.</p>
+  <fieldset class="toggles">
+    <legend class="visually-hidden">적용할 모듈</legend>
+    {
+      modules.map((m) => (
+        <label class="toggle">
+          <input type="checkbox" checked data-flag={m.key} />
+          <span class="tl">{m.label}</span>
+          <span class="td">{m.desc}</span>
+        </label>
+      ))
+    }
+  </fieldset>
+  <div class="result" aria-live="polite" data-result>
+    <p class="cond" data-cond>전체 모델</p>
+    <dl class="vals">
+      {
+        abl.columns.map((c) => (
+          <div>
+            <dt>
+              {c.label} {c.better === "higher" ? "↑" : "↓"}
+            </dt>
+            <dd class="num" data-val={c.key}>{full.values[c.key]?.toFixed(c.digits)}</dd>
+            <dd class="delta num" data-delta={c.key}>전체 모델</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="src" data-src>{conditions.find((c) => c === full)?.source}</p>
+  </div>
+  <div class="presets" role="group" aria-label="측정한 조건 바로 선택">
+    {
+      conditions.map((c, i) => (
+        <button type="button" data-preset={i}>
+          {c.label}
+        </button>
+      ))
+    }
+  </div>
+  <script type="application/json" data-abl-json set:html={JSON.stringify(data)} />
+</section>
+
+<script>
+  type Col = { key: string; label: string; better: "higher" | "lower"; digits: number };
+  type Cond = { label: string; flags: Record<string, boolean>; values: Record<string, number>; source: string };
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-abl]")) {
+    const data = JSON.parse(root.querySelector("[data-abl-json]")!.textContent!) as {
+      columns: Col[];
+      conditions: Cond[];
+      full: Record<string, number>;
+      modules: string[];
+    };
+    const boxes = [...root.querySelectorAll<HTMLInputElement>("[data-flag]")];
+    const result = root.querySelector<HTMLElement>("[data-result]")!;
+    const condEl = root.querySelector<HTMLElement>("[data-cond]")!;
+    const srcEl = root.querySelector<HTMLElement>("[data-src]")!;
+
+    const update = () => {
+      const flags = Object.fromEntries(boxes.map((b) => [b.dataset.flag!, b.checked]));
+      const hit = data.conditions.find((c) => data.modules.every((k) => c.flags[k] === flags[k]));
+      result.classList.toggle("missing", !hit);
+      for (const b of root.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
+        b.setAttribute("aria-pressed", String(hit !== undefined && data.conditions[Number(b.dataset.preset)] === hit));
+      }
+      if (!hit) {
+        condEl.textContent = "측정하지 않은 조합";
+        srcEl.textContent = "학위논문 표 4는 모듈을 하나씩 뺀 조건만 측정했습니다. 값을 추정해 보여주지 않습니다.";
+        for (const c of data.columns) {
+          root.querySelector(`[data-val="${c.key}"]`)!.textContent = "–";
+          root.querySelector(`[data-delta="${c.key}"]`)!.textContent = "";
+        }
+        return;
+      }
+      condEl.textContent = hit.label;
+      srcEl.textContent = `출처: ${hit.source}`;
+      for (const c of data.columns) {
+        const v = hit.values[c.key]!;
+        const d = v - data.full[c.key]!;
+        root.querySelector(`[data-val="${c.key}"]`)!.textContent = v.toFixed(c.digits);
+        const el = root.querySelector<HTMLElement>(`[data-delta="${c.key}"]`)!;
+        if (Math.abs(d) < 1e-9) {
+          el.textContent = "기준 (전체 모델)";
+          el.dataset.dir = "";
+        } else {
+          const worse = c.better === "higher" ? d < 0 : d > 0;
+          el.textContent = `전체 모델 대비 ${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(c.digits)}`;
+          el.dataset.dir = worse ? "worse" : "better";
+        }
+      }
+    };
+
+    for (const b of boxes) b.addEventListener("change", update);
+    for (const btn of root.querySelectorAll<HTMLButtonElement>("[data-preset]")) {
+      btn.addEventListener("click", () => {
+        const c = data.conditions[Number(btn.dataset.preset)]!;
+        for (const b of boxes) b.checked = c.flags[b.dataset.flag!] ?? false;
+        update();
+      });
+    }
+    update();
+  }
+</script>
+
+<style>
+  .abl {
+    margin: var(--sp-5) 0;
+    padding: var(--sp-4);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+  }
+  h4 {
+    font-size: var(--fs-md);
+  }
+  .lead {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    margin: var(--sp-1) 0 var(--sp-3) !important;
+  }
+  .toggles {
+    border: 0;
+    padding: 0;
+    margin: 0 0 var(--sp-3);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-2);
+  }
+  .toggle {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--sp-2);
+    align-items: start;
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    background: var(--c-surface-2);
+  }
+  .toggle:has(input:checked) {
+    border-color: var(--c-accent);
+    background: var(--c-accent-soft);
+  }
+  .toggle input {
+    margin-top: 0.35em;
+    accent-color: var(--c-accent);
+    grid-row: span 2;
+  }
+  .tl {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .td {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .result {
+    border-radius: var(--radius-sm);
+    background: var(--c-surface-2);
+    padding: var(--sp-3) var(--sp-4);
+  }
+  .result.missing {
+    background: var(--c-pending-bg);
+  }
+  .cond {
+    font-weight: 700;
+    margin: 0 0 var(--sp-2) !important;
+  }
+  .result.missing .cond {
+    color: var(--c-pending);
+  }
+  .vals {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-3);
+    margin: 0;
+  }
+  .vals dt {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .vals dd {
+    margin: 0;
+  }
+  .vals dd:not(.delta) {
+    font-size: var(--fs-xl);
+    font-weight: 700;
+  }
+  .delta {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .delta[data-dir="worse"] {
+    color: #a33a2a;
+  }
+  .delta[data-dir="better"] {
+    color: var(--c-accent-strong);
+  }
+  .src {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    margin: var(--sp-2) 0 0 !important;
+  }
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin-top: var(--sp-3);
+  }
+  .presets button {
+    font: inherit;
+    font-size: var(--fs-xs);
+    border: 1px solid var(--c-border-strong);
+    background: var(--c-surface);
+    color: var(--c-text-2);
+    border-radius: 999px;
+    padding: 0.25em 0.8em;
+    cursor: pointer;
+  }
+  .presets button[aria-pressed="true"] {
+    background: var(--c-text);
+    border-color: var(--c-text);
+    color: #fff;
+  }
+  @media (max-width: 640px) {
+    .toggles,
+    .vals {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

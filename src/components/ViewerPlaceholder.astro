@@ -1,0 +1,60 @@
+---
+// 3단계(Spark 실시간 뷰어) 자리. 지금은 무엇이 들어올지와 해석 기준만 안내한다.
+import Badge from "./Badge.astro";
+
+interface Props {
+  title: string;
+  planned: string[];
+}
+const { title, planned } = Astro.props;
+const print = Astro.locals.print === true;
+---
+
+<aside class="viewer" aria-label={`${title} (준비 중)`} hidden={print}>
+  <div class="head">
+    <Badge kind="web" />
+    <p class="title">{title} <span>· 준비 중</span></p>
+  </div>
+  <ul>
+    {planned.map((p) => <li>{p}</li>)}
+  </ul>
+  <p class="rule">
+    웹 뷰어는 자유 시점 탐색용입니다. 브라우저 렌더러는 원본 3DGS 렌더러와 결과가 다를 수 있으므로, 정량 수치와 정성 비교는
+    위의 표와 원본 렌더러 이미지를 기준으로 봐 주세요.
+  </p>
+</aside>
+
+<style>
+  .viewer {
+    margin: var(--sp-5) 0;
+    padding: var(--sp-5);
+    border-radius: var(--radius);
+    background: var(--c-viewer-bg);
+    color: var(--c-viewer-text);
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+  }
+  .title {
+    font-weight: 700;
+  }
+  .title span {
+    font-weight: 400;
+    color: #a3a7ae;
+  }
+  ul {
+    margin: var(--sp-3) 0;
+    padding-left: 1.1em;
+    font-size: var(--fs-sm);
+    color: #c9ccd1;
+  }
+  .rule {
+    font-size: var(--fs-xs);
+    color: #a3a7ae;
+    border-top: 1px solid #2a2c30;
+    padding-top: var(--sp-3);
+  }
+</style>

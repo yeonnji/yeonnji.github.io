@@ -1,0 +1,143 @@
+---
+title: "내시경 정반사 분리 기반 3DGS 복원"
+headline: "복원을 방해하는 시점 의존 정반사를 별도 성분으로 분리하고, 불확실한 고반사 관측의 학습 영향을 낮췄습니다."
+summary: "내시경은 광원과 카메라가 가까워 정반사가 조직의 색·질감 복원을 방해합니다. 입력을 시점 독립적인 조직 기본 외관과 시점 의존적인 정반사 성분으로 분해하는 3DGS 기반 방법을 연구했고, C3VD에서 정반사 억제와 일관된 조직 외관 복원을 정성적으로 보였습니다."
+card:
+  order: 2
+  size: feature
+  kind: "연구"
+  blurb: "내시경 영상에서 시점마다 움직이는 정반사를 조직 외관과 분리해 학습하는 3DGS 방법을 설계했습니다. 대장 모형 데이터셋(C3VD)에서 하이라이트를 줄이고 주변 조직과 이어지는 외관 복원을 보였습니다."
+  role: "제1저자 · 방법 설계·구현·실험"
+  period: "석사과정 · 2026.04 발표"
+  tags: ["3DGS", "PyTorch", "C3VD"]
+  categories: ["3d"]
+  badge: "MUE 2026 Best Paper Award"
+  thumb: { figure: "endo-compare3", panels: ["3dgs", "ours"], labels: ["표준 3DGS", "제안 방법"] }
+period: "석사과정 중 · MUE 2026 발표"
+org: "인하대학교 미디어인공지능연구실"
+role: "제1저자 · 방법 설계와 실험, 동영상 발표"
+team: "Yeon Ji · Jae-Hyeong Kim · Byeong-Seok Shin (지도교수)"
+venues: ["MUE 2026 Best Paper Award", "공학석사학위논문"]
+stack: ["Python", "PyTorch", "3D Gaussian Splatting", "C3VD", "HSV prior"]
+links:
+  - { label: "코드 (paper-mue2026)", href: "https://github.com/yeonnji/paper-mue2026" }
+keyMetric:
+  value: "Best Paper"
+  label: "MUE 2026 Best Paper Award"
+  condition: "제1저자 · 동영상 발표. 정량 지표는 정반사 제외 영역에서 표준 3DGS와 같거나 소폭 높음 (PSNR 35.80 → 35.88)"
+---
+
+import Claim from "../../components/Claim.astro";
+import MetricTable from "../../components/MetricTable.astro";
+import Figure from "../../components/Figure.astro";
+import RoleTable from "../../components/RoleTable.astro";
+import ImageCompare from "../../components/interactive/ImageCompare.astro";
+
+export const decompFrames = [1, 2, 3, 4].map((i) => ({
+  figure: "endo-decomp",
+  label: `시점 ${i}`,
+  map: { input: `input${i}`, highlight: `highlight${i}`, overlay: `overlay${i}` },
+}));
+
+## 해결하려던 문제
+
+내시경은 광원과 카메라가 거의 같은 위치에 있어, 점막 표면에 시점에 따라 움직이는 강한 정반사가 자주 생깁니다. 표준 3DGS는 이 하이라이트를 조직의 색·질감으로 함께 학습해, 새 시점에서도 밝기 포화와 색 왜곡이 남습니다.
+
+<Figure id="endo-compare3" panels={["input", "3dgs"]} caption="입력(왼쪽)의 고리 모양 정반사가 표준 3DGS 복원(오른쪽)에도 남아 있습니다." />
+
+## 담당 범위와 협업
+
+<RoleTable
+  mine={[
+    "정반사 분해 방법 설계와 C3VD 실험 (제1저자)",
+    "원본 3DGS 대비 수정 코드 전부 작성 (정반사 추정, 최적화 경로 분리, 가중치, 정반사 제외 평가)",
+    "MUE 2026 논문 집필과 동영상 발표",
+  ]}
+  others={[
+    "베이스 코드: Inria 3D Gaussian Splatting",
+    "참고 구현: PR-ENDO (내시경 3DGS)",
+    "데이터 전처리: EndoGSLAM 파이프라인",
+    "공동저자(Jae-Hyeong Kim)·지도교수(Byeong-Seok Shin): 연구 논의와 검토",
+  ]}
+  othersTitle="기반 코드 · 공동연구자"
+/>
+
+## 주요 판단과 선택 이유
+
+- **정반사를 복원 대상이 아닌 "방해하는 관측"으로 정의했습니다.** 정반사는 조직의 성질이 아니라 광원·카메라 위치에 따라 생기는 관측이므로, 조직 외관과 별도 성분으로 분리해 다뤘습니다.
+- **정반사를 맞추는 학습이 조직 구조를 바꾸지 않게 했습니다.** 두 성분의 최적화 경로를 나눠, 하이라이트를 설명하려고 조직 쪽 가우시안이 변형되는 것을 막았습니다.
+- **조명 연구와 반대로 가중치를 낮췄습니다.** 실내 장면에서는 광원 자체가 복원 대상이라 광원 영역의 손실 가중치를 높였고, 여기서는 정반사가 조직 복원을 방해하므로 정반사 가능성이 높은 픽셀의 가중치를 낮췄습니다. 두 연구를 비교해 정리한 해석이며, 가중치 방향을 직접 비교한 별도 실험은 아닙니다.
+- **정량 평가는 정반사를 뺀 영역에서 했습니다.** 입력 영상에 정반사가 들어 있어, 정반사 영역까지 입력과 비교하면 하이라이트를 그대로 재현할수록 점수가 높아지기 때문입니다. 정반사 영역은 정성 비교로 보였습니다.
+
+## 방법과 실험 과정 (MUE 2026 논문 기준)
+
+입력 영상 I를 시점에 따라 변하지 않는 조직 기본 외관 I<sub>base</sub>와 시점에 따라 변하는 정반사 성분 I<sub>spec</sub>으로 나눕니다. 조직 구조는 3DGS로 표현하고, 정반사 성분은 따로 추정합니다.
+
+<div class="eq">I ≈ I<sub>base</sub> + I<sub>spec</sub></div>
+
+- **정반사 추정:** HSV 사전정보(밝고 채도가 낮은 픽셀)와, 기본 외관보다 밝은 양(+)의 잔차를 함께 써서 I<sub>spec</sub>을 추정합니다.
+- **최적화 경로 분리:** 정반사를 맞추는 과정이 조직 기본 구조를 직접 바꾸지 않도록 두 성분의 최적화를 분리했습니다.
+- **관측 신뢰도 가중치:** 정반사 가능성이 높은 픽셀은 기본 외관 학습에서 가중치를 낮춰, 여러 시점에서 안정적으로 관측된 정보를 우선 반영합니다.
+
+<div class="eq">w = clamp(1 − α · P<sub>HSV</sub>, w<sub>min</sub>, 1)</div>
+
+<div class="callout limit">
+
+**공개 코드와 논문 방법의 차이.** 현재 공개 저장소의 코드는 논문 제출 이후 발전시킨 버전입니다. 정반사 추정에 포즈 임베딩 MLP와 FiLM 조건부 CNN을 쓰고 손실 항이 6개로 늘었으며, 가중치 형태도 다릅니다. 따라서 저장소 코드를 그대로 실행해도 아래 표 1 수치가 재현된다는 보장은 없습니다. 이 페이지의 방법 설명은 논문 기준입니다.
+
+</div>
+
+## 결과와 검증
+
+### 정성 비교: 정반사 억제와 조직 외관
+
+<ImageCompare
+  title="C3VD 테스트 프레임 비교"
+  cases={[1, 2, 3, 4].map((i) => ({ figure: `endo-compare${i}`, label: `프레임 ${i}` }))}
+  pairs={[
+    { left: "3dgs", right: "ours", label: "표준 3DGS ↔ 제안 방법" },
+    { left: "input", right: "ours", label: "입력 ↔ 제안 방법" },
+    { left: "input", right: "3dgs", label: "입력 ↔ 표준 3DGS" },
+  ]}
+  labels={{ input: "입력", "3dgs": "표준 3DGS", ours: "제안 방법" }}
+  caption="학위논문 그림 9의 테스트 프레임입니다."
+  printLimit={2}
+/>
+
+표준 3DGS는 입력의 하이라이트를 상당 부분 그대로 재현하지만, 제안 방법은 하이라이트를 줄이고 주변 조직과 이어지는 색·질감으로 복원합니다.
+
+### 분리한 정반사 성분
+
+<ImageCompare
+  title="분리한 정반사 성분"
+  cases={decompFrames}
+  pairs={[
+    { left: "input", right: "overlay", label: "입력 ↔ 정반사 영역 표시" },
+    { left: "input", right: "highlight", label: "입력 ↔ 분리한 정반사 성분" },
+  ]}
+  labels={{ input: "입력", highlight: "정반사 성분", overlay: "정반사 영역(녹색)" }}
+  caption="학위논문 그림 10. 녹색은 정반사로 판정한 영역을 입력 위에 겹친 것입니다."
+  printLimit={2}
+/>
+
+분리한 정반사 성분은 입력의 하이라이트 위치와 대응하며, 시점이 달라도 같은 방식으로 분리되는 것을 확인했습니다.
+
+### 정반사 제외 영역 정량 평가
+
+<MetricTable id="endo-mue" />
+
+<Claim id="mue-metric" />. 정반사를 분리해도 그 밖의 조직 영역 복원 품질은 떨어지지 않았다는 근거로 봅니다. 큰 폭의 정량 개선을 주장하는 결과는 아닙니다.
+
+## 한계와 추가 과제
+
+<div class="callout limit">
+
+- 정량 표는 정반사 영역을 **뺀** 픽셀의 평가입니다. 정반사 영역 내부의 제거 정확도는 정량 평가하지 않았고, 정성 비교로 보였습니다.
+- 비교 이미지는 학위논문(2026.08) 그림이고 정량 표는 MUE 2026 논문 값이며, 둘 다 MUE 논문 시점의 같은 코드 버전에서 나온 결과입니다.
+- C3VD는 실제 환자 영상이 아니라 대장 모형을 촬영한 데이터셋입니다. 임상 영상에 대한 성능은 평가하지 않았습니다.
+
+</div>
+
+추가 과제: 정반사 영역 내부의 복원 정확도를 정량으로 평가할 기준을 마련하는 것, 그리고 공개 저장소의 발전된 버전을 같은 조건에서 다시 평가하는 것입니다.
+
+같은 연구축의 앞선 연구: [강한 광원 주변의 3DGS 복원 왜곡 개선](/research/illumination-3dgs/)

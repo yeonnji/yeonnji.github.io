@@ -1,0 +1,243 @@
+---
+// 시스템 구성·데이터 흐름·점검 순서를 그리는 개념도. 텍스트 기반(HTML)이라 좁은 화면에서는 세로로 바뀌고 인쇄에도 그대로 나온다.
+// 상자 색으로 담당을 구분한다: mine(본인) · team(협업자·팀원) · ext(외부 장비·시스템).
+import Badge from "./Badge.astro";
+
+type Node = { label: string; sub?: string; kind?: "mine" | "team" | "ext" };
+interface Props {
+  title: string;
+  nodes: Node[];
+  /** 상자 사이 화살표에 붙일 짧은 설명 (nodes.length - 1개) */
+  edges?: string[];
+  caption?: string;
+  /** steps: 번호를 붙인 점검 순서 */
+  variant?: "flow" | "steps";
+}
+const { title, nodes, edges = [], caption, variant = "flow" } = Astro.props;
+const kinds = new Set(nodes.map((n) => n.kind ?? "ext"));
+const legend = [
+  { kind: "mine", label: "본인 담당" },
+  { kind: "team", label: "협업자·팀원 담당" },
+  { kind: "ext", label: "외부 장비·시스템" },
+].filter((l) => kinds.has(l.kind as Node["kind"] & string));
+---
+
+<figure class:list={["flow", variant]}>
+  <figcaption class="top">
+    <span class="title">{title}</span>
+    <Badge kind="concept" />
+  </figcaption>
+  <ol class="chain">
+    {
+      nodes.map((n, i) => (
+        <>
+          <li class:list={["node", n.kind ?? "ext"]}>
+            {variant === "steps" && <span class="num">{i + 1}</span>}
+            <span class="label">{n.label}</span>
+            {n.sub && <span class="sub">{n.sub}</span>}
+          </li>
+          {i < nodes.length - 1 && (
+            <li class="edge" aria-hidden={edges[i] ? undefined : "true"}>
+              <span class="arrow" aria-hidden="true" />
+              {edges[i] && <span class="elabel">{edges[i]}</span>}
+            </li>
+          )}
+        </>
+      ))
+    }
+  </ol>
+  {
+    variant === "flow" && legend.length > 1 && (
+      <ul class="legend" aria-label="범례">
+        {legend.map((l) => (
+          <li>
+            <span class:list={["sw", l.kind]} />
+            {l.label}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {caption && <figcaption class="cap">{caption}</figcaption>}
+</figure>
+
+<style>
+  .flow {
+    margin: var(--sp-5) 0;
+    padding: var(--sp-4);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius);
+    background: var(--c-surface);
+    break-inside: avoid;
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-3);
+  }
+  .title {
+    font-weight: 700;
+    font-size: var(--fs-sm);
+  }
+  .chain {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+  }
+  .node {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--sp-3);
+    border-radius: var(--radius-sm);
+    text-align: center;
+    position: relative;
+  }
+  .node.mine {
+    background: var(--c-accent-soft);
+    border: 2px solid var(--c-accent);
+  }
+  .node.team {
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border-strong);
+  }
+  .node.ext {
+    background: var(--c-surface);
+    border: 1px dashed var(--c-border-strong);
+  }
+  .label {
+    font-weight: 700;
+    font-size: var(--fs-sm);
+    line-height: 1.35;
+  }
+  .sub {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    line-height: 1.4;
+  }
+  .num {
+    align-self: center;
+    width: 1.6em;
+    height: 1.6em;
+    border-radius: 50%;
+    background: var(--c-text);
+    color: #fff;
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    display: grid;
+    place-items: center;
+    margin-bottom: 2px;
+  }
+  .edge {
+    flex: 0 0 auto;
+    width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .arrow {
+    width: 100%;
+    height: 2px;
+    background: var(--c-text-2);
+    position: relative;
+  }
+  .arrow::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    top: -4px;
+    border-left: 8px solid var(--c-text-2);
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+  }
+  .elabel {
+    font-size: var(--fs-2xs);
+    color: var(--c-text-3);
+    text-align: center;
+    line-height: 1.25;
+  }
+  .legend {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+    margin: var(--sp-3) 0 0;
+    padding: 0;
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .legend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sw {
+    width: 14px;
+    height: 10px;
+    border-radius: 2px;
+  }
+  .sw.mine {
+    background: var(--c-accent-soft);
+    border: 2px solid var(--c-accent);
+  }
+  .sw.team {
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border-strong);
+  }
+  .sw.ext {
+    border: 1px dashed var(--c-border-strong);
+  }
+  .cap {
+    margin-top: var(--sp-2);
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  /* 점검 순서: 번호 상자를 격자로 */
+  .steps .chain {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--sp-2);
+  }
+  .steps .edge {
+    display: none;
+  }
+  .steps .node {
+    justify-content: flex-start;
+  }
+  /* 좁은 화면: 세로 흐름 */
+  @media (max-width: 720px) {
+    .chain {
+      flex-direction: column;
+    }
+    .edge {
+      width: auto;
+      height: 34px;
+      flex-direction: row;
+      gap: var(--sp-2);
+    }
+    .arrow {
+      width: 2px;
+      height: 100%;
+    }
+    .arrow::after {
+      right: -4px;
+      top: auto;
+      bottom: -1px;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 8px solid var(--c-text-2);
+      border-bottom: 0;
+    }
+  }
+</style>

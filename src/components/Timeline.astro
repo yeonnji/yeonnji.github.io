@@ -1,0 +1,157 @@
+---
+// 원과 선으로 잇는 세로 타임라인. 하위 항목(children)은 작은 빈 원으로 한 단계 들여 그린다.
+// projects는 프로젝트 상세 페이지 링크로 바꾼다(없는 id면 빌드에서 실패).
+import type { CvItem } from "../data/cv";
+import { getExperiences } from "../lib/experiences";
+import { href as withBase } from "../lib/format";
+
+interface Props {
+  items: CvItem[];
+  nested?: boolean;
+}
+const { items, nested = false } = Astro.props;
+const paths = new Map((await getExperiences()).map((e) => [e.id, e.path]));
+const projectUrl = (id: string) => {
+  const p = paths.get(id);
+  if (!p) throw new Error(`cv.ts: 없는 프로젝트 id "${id}"`);
+  return withBase(p);
+};
+---
+
+<ol class:list={["tl", { nested }]}>
+  {
+    items.map((it) => (
+      <li>
+        <p class="t">
+          {it.href ? <a href={withBase(it.href)}>{it.title}</a> : it.title}
+        </p>
+        <p class="p num">
+          {it.period}
+          {it.meta && <span class="m"> · {it.meta}</span>}
+        </p>
+        {it.desc && <p class="d">{it.desc}</p>}
+        {it.projects && (
+          <p class="pj">
+            <span class="visually-hidden">관련 프로젝트:</span>
+            {it.projects.map((pr) => (
+              <a href={projectUrl(pr.id)}>{pr.label} →</a>
+            ))}
+          </p>
+        )}
+        {it.children && it.children.length > 0 && <Astro.self items={it.children} nested />}
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .tl {
+    --dot: 13px;
+    --line: 2px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .tl > li {
+    position: relative;
+    padding: 0 0 var(--sp-5) calc(var(--dot) + var(--sp-4));
+  }
+  /* 원 */
+  .tl > li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.42em;
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    background: var(--c-text);
+  }
+  /* 다음 원까지 잇는 선 */
+  .tl > li::after {
+    content: "";
+    position: absolute;
+    left: calc((var(--dot) - var(--line)) / 2);
+    top: calc(0.42em + var(--dot));
+    bottom: calc(-0.42em);
+    width: var(--line);
+    background: var(--c-text);
+  }
+  .tl > li:last-child::after {
+    display: none;
+  }
+  .tl > li:last-child {
+    padding-bottom: 0;
+  }
+  .t {
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .t a {
+    color: inherit;
+    text-decoration-color: var(--c-border-strong);
+  }
+  .t a:hover {
+    color: var(--c-accent-strong);
+  }
+  .p {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    margin-top: 2px;
+  }
+  .m {
+    color: var(--c-text-3);
+  }
+  .pj {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px var(--sp-3);
+    margin-top: 4px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+  }
+  .pj a {
+    text-decoration: none;
+  }
+  .pj a:hover {
+    text-decoration: underline;
+  }
+  .d {
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+    color: var(--c-text-2);
+    margin-top: 4px;
+  }
+
+  /* 하위 항목: 작은 빈 원, 강조색 선 */
+  .tl.nested {
+    --dot: 9px;
+    --line: 1px;
+    margin-top: var(--sp-3);
+  }
+  .tl.nested > li {
+    padding-bottom: var(--sp-3);
+  }
+  .tl.nested > li::before {
+    background: var(--c-bg);
+    border: 2px solid var(--c-accent);
+    box-sizing: border-box;
+  }
+  .tl.nested > li::after {
+    background: var(--c-border-strong);
+  }
+  .tl.nested .t {
+    font-weight: 600;
+    font-size: var(--fs-sm);
+  }
+  .tl.nested .p,
+  .tl.nested .d {
+    font-size: var(--fs-xs);
+  }
+
+  @media print {
+    .tl > li {
+      break-inside: avoid;
+    }
+  }
+</style>

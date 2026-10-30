@@ -1,0 +1,21 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { href } from "../lib/format";
+---
+
+<BaseLayout title="페이지를 찾을 수 없음" description="요청한 페이지가 없습니다.">
+  <div class="container nf">
+    <h1>페이지를 찾을 수 없습니다</h1>
+    <p><a href={href("/")}>홈으로 돌아가기</a></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .nf {
+    padding-block: var(--sp-8);
+  }
+  h1 {
+    font-size: var(--fs-2xl);
+    margin-bottom: var(--sp-3);
+  }
+</style>

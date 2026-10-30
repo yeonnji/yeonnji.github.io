@@ -1,0 +1,145 @@
+---
+title: "철도 복합물류 의사결정 플랫폼"
+headline: "분석 이력 조회 기능을 개발하고, 배포 후 생긴 두 오류를 서로 다른 원인으로 나눠 고친 뒤 화면부터 이력 조회까지 다시 검증했습니다."
+summary: "도로 단독운송과 철도 복합운송을 비용·시간·탄소로 비교하고 추천 근거와 분석 이력을 제공하는 해커톤 프로토타입(RAILINK)입니다. 4인 팀장으로 지난 분석을 검색·조회·집계하는 분석 이력 조회 기능과 배포 환경을 맡았고, 마감 직전 업무를 다시 나눠 네 명이 함께 결과물을 제출했습니다."
+card:
+  order: 8
+  size: normal
+  kind: "팀 프로젝트"
+  todo:
+    - "서비스 화면 이미지와 시연 영상 링크"
+  blurb: "4인 팀장으로 지난 분석을 검색·조회·집계하는 분석 이력 조회 기능을 개발하고, 배포 후 생긴 경로·API 주소 오류를 원인별로 나눠 고쳐 전체 흐름을 다시 검증했습니다."
+  role: "팀장 · 분석 이력 조회 백엔드 · 배포 설정"
+  period: "2026.06 – 2026.08"
+  tags: ["C# · ASP.NET Core", "PostgreSQL", "Firebase"]
+  categories: ["system"]
+  badge: "MOVE-AI Challenge 2026 본선"
+  diagram:
+    - { label: "React 화면" }
+    - { label: "분석 이력 조회 API", mine: true }
+    - { label: "PostgreSQL" }
+period: "2026.06.27 – 2026.08.13"
+org: "MOVE-AI Challenge 2026 본선 (한국철도공사 도전그룹)"
+role: "팀장 · 분석 이력 조회 백엔드 · 통합 디버깅·QA · 배포 설정"
+team: "4인 팀: 데이터 분석·AI, 프런트엔드·디자인, 백엔드·DB 설계, 본인"
+stack: ["C#", ".NET 10", "ASP.NET Core", "EF Core", "PostgreSQL · Supabase", "React 19 · Vite", "Firebase Hosting", "GitHub Actions"]
+links:
+  - { label: "프런트엔드 (본인 계정)", href: "https://github.com/yeonnji/RaiLinkFrontEnd" }
+  - { label: "백엔드 (팀원 계정)", href: "https://github.com/KimHyeJiiii/RaiLinkBackEnd" }
+---
+
+import RoleTable from "../../components/RoleTable.astro";
+import FlowDiagram from "../../components/FlowDiagram.astro";
+
+## 해결하려던 문제
+
+화물을 도로에서 철도로 옮기려면 화물역, 환적, 셔틀·하역비, 운송 시간, 탄소배출을 함께 비교해야 하지만 정보가 흩어져 있었습니다. 팀은 이 문제를 "철도 노선 탐색"이 아니라 **도로와 철도 대안을 같은 기준으로 비교하고, 나중에 다시 확인할 수 있는 의사결정 문제**로 정리했습니다.
+
+본선에서는 제한된 시간 안에 기획, 데이터·AI, 프런트엔드, 백엔드, 발표 자료를 동시에 완성해야 했습니다. 로컬에서는 연결되던 화면과 API가 배포 후에는 동작하지 않았고, 장시간 작업으로 팀원의 부담도 커졌습니다.
+
+### 시스템 구성
+
+<FlowDiagram
+  title="분석 이력 조회 흐름"
+  nodes={[
+    { label: "React 화면", sub: "Firebase Hosting · 배포 설정은 본인", kind: "team" },
+    { label: "분석 이력 API", sub: "ASP.NET Core · Cloud Run · 본인 개발", kind: "mine" },
+    { label: "PostgreSQL", sub: "Supabase · EF Core 조회", kind: "ext" },
+  ]}
+  edges={["REST · JSON", "분석 이력 테이블"]}
+  caption="운송안 계산(Python 분석 API)과 추천 설명(Gemini)은 팀원 담당입니다. 계산 결과가 저장되면 이력 API가 조회·집계합니다."
+/>
+
+## 담당 범위와 협업
+
+<RoleTable
+  mine={[
+    "팀장: 문제 정의, 우선순위와 역할 조정",
+    "분석 이력 조회 기능: 목록 검색·상세·주간 요약 REST API (C# · ASP.NET Core · EF Core)",
+    "프런트엔드·백엔드 통합 디버깅과 QA",
+    "Firebase Hosting 설정과 GitHub Actions 배포 환경변수",
+    "UI 디자인·결과보고서 제작 참여",
+  ]}
+  others={[
+    "운송안 계산 로직과 AI 추천 설명 (데이터 분석·AI 담당)",
+    "화면 구현과 디자인 (프런트엔드 담당)",
+    "백엔드·DB 설계 (백엔드 담당)",
+  ]}
+  othersTitle="팀원 담당"
+/>
+
+## 주요 판단과 선택 이유
+
+- **분석 결과를 다시 찾아볼 수 있어야 의사결정 도구라고 봤습니다.** 한 번 보고 끝나는 계산 화면이 아니라, 이전 분석을 검색하고 다시 비교할 수 있도록 이력 조회 기능을 맡았습니다.
+- **두 배포 오류를 하나의 원인으로 묶지 않았습니다.** 한 가지 원인으로 보고 고치면 다른 하나가 남기 때문에, 증상별로 나눠 확인했습니다.
+- **AI 도구의 제안은 실제 설정과 대조한 뒤 적용했습니다.** ChatGPT와 Claude Code에 오류 현상만 묻지 않고 Firebase 설정·Vite proxy·API 호출 코드·로컬과 배포 환경의 차이를 함께 제공해 원인 후보와 확인 순서를 받았고, 하나씩 실제 설정과 맞춰 봤습니다.
+- **마감 직전에는 담당 구분보다 완성을 우선했습니다.** 한 팀원이 부담 때문에 중도 하차를 고민할 때 작업을 다시 나눴고, 본인은 통합 디버깅·QA·배포를 추가로 맡았습니다.
+
+## 구현 과정
+
+### 1. 분석 이력 조회 기능
+
+이전 분석을 찾아 다시 비교할 수 있게 하는 기능입니다. 목록 검색, 접수번호 상세, 주간 요약을 각각 API로 제공했습니다.
+
+<table class="simple">
+  <thead>
+    <tr><th>API</th><th>내용</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>GET /api/history</code></td><td>출발지·도착지 검색, 기간·운송 방식·비용 절감 조건 필터, 비용·탄소 기준 정렬, 페이지네이션 (입력값 검증 포함)</td></tr>
+    <tr><td><code>GET /api/history/&#123;receptNo&#125;</code></td><td>접수번호로 입력 조건과 결과 JSON 상세 조회</td></tr>
+    <tr><td><code>GET /api/history/summary</code></td><td>주간 분석 건수, 철도 추천 건수·비율, 평균 비용·탄소 절감률, 최근 분석</td></tr>
+  </tbody>
+</table>
+
+### 2. 배포 후 두 오류를 서로 다른 원인으로 분리
+
+로컬에서는 문제없던 기능이 Firebase 배포 후 두 군데에서 동시에 실패했습니다.
+
+<table class="simple">
+  <thead>
+    <tr><th>증상</th><th>원인</th><th>수정</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>특정 화면에서 새로고침하면 오류</td><td>React 화면 경로를 Firebase가 실제 파일 경로로 찾음</td><td>모든 경로를 <code>index.html</code>로 보내는 rewrite</td></tr>
+    <tr><td>화면의 API 요청이 백엔드에 닿지 않음</td><td>로컬은 Vite proxy가 백엔드로 넘겨 줬지만, 배포 빌드에는 백엔드 주소가 없음</td><td>배포 단계에서 Cloud Run API 전체 주소를 환경변수로 주입</td></tr>
+  </tbody>
+</table>
+
+실제로 고친 설정입니다. 위는 `firebase.json`, 아래는 배포 워크플로이며 백엔드 주소는 가렸습니다.
+
+```json
+"rewrites": [
+  { "source": "**", "destination": "/index.html" }
+]
+```
+
+```yaml
+- run: npm run build
+  env:
+    VITE_SHIPPING_API_PATH: https://<cloud-run-host>/api/Shipping/recommend
+    VITE_HISTORY_SUMMARY_API_PATH: https://<cloud-run-host>/api/history/summary
+    VITE_HISTORY_LIST_API_PATH: https://<cloud-run-host>/api/history
+```
+
+수정 후 다시 배포해 **화면 접근 → API 호출 → 데이터 저장 → 이력 조회**까지 전체 흐름을 점검했습니다.
+
+### 3. 마감 전 업무 재분배
+
+마감이 가까워지자 특정 업무가 밀렸습니다. 작업을 다시 나눈 뒤 오류가 이어지는 동안에도 진행 상황과 다음 작업을 팀에 계속 공유했습니다.
+
+## 결과와 검증
+
+- 조건 입력 → 운송안 분석 → 비용·시간·탄소 비교 → 추천 설명 → 분석 이력 검색·상세 조회로 이어지는 프로토타입을 완성했습니다.
+- 결과보고서, 시연 영상, 프런트엔드·백엔드 소스, UI 화면을 본선 기한 안에 네 명이 함께 제출했습니다.
+- 팀원들에게서 "상황 전환이 빠르고, 장시간 작업에서도 집중력을 유지하며 팀원의 부담을 잘 살핀다"는 평가를 받았습니다.
+
+## 한계와 추가 과제
+
+<div class="callout limit">
+
+- 화면의 비용·탄소 절감 수치는 공개·가공 데이터와 일부 가정으로 만든 **모의 계산**이며 실제 절감 실적이 아닙니다.
+- 실제 운임·열차 일정·화물역 운영정보와 노선별 수용능력은 반영하지 않았습니다.
+- 수상이나 최종 순위는 확인되지 않아, 결과물 완성·제출까지만 성과로 적었습니다.
+
+</div>

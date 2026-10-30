@@ -1,0 +1,62 @@
+:root {
+  /* color */
+  --c-bg: #ffffff;
+  --c-surface: #ffffff;
+  --c-surface-2: #f5f6f8; /* 중성 회색 (누런 기 없음) */
+  --c-text: #17181a;
+  --c-text-2: #4a4e55;
+  --c-text-3: #6b7079;
+  --c-border: #e4e6ea;
+  --c-border-strong: #cdd1d7;
+
+  /* 포인트 색: 딥 코발트. 버튼·링크·본인 담당·핵심 수치에만 쓴다 */
+  --c-accent: #2747b8; /* 흰 배경 대비 7.8:1 */
+  --c-accent-strong: #1e3a96; /* 호버·강조 텍스트 */
+  --c-accent-soft: #eef2fc;
+  --c-accent-on-dark: #a9bbff; /* 어두운 결과 화면 위 */
+  --c-baseline: #6f7580; /* 비교 기준(표준 3DGS) */
+
+  --c-pending: #7a4d00;
+  --c-pending-bg: #fdf1dc;
+  --c-review: #4b4f8a;
+  --c-review-bg: #ecedf9;
+
+  --c-viewer-bg: #111214; /* 렌더 결과를 보여주는 영역은 어두운 배경 */
+  --c-viewer-text: #e8e9eb;
+
+  /* type */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  --fs-2xs: 0.75rem; /* 12px: 날짜·짧은 태그·이미지 위 라벨에만 */
+  --fs-xs: 0.875rem; /* 14px: 캡션·보조 설명 */
+  --fs-sm: 0.9375rem; /* 15px: 메뉴·버튼·링크 줄 */
+  --fs-base: 1rem; /* 16px: 좁은 칸의 본문(카드·표·이력) */
+  --fs-md: clamp(1rem, 0.94rem + 0.25vw, 1.0625rem); /* 본문: 모바일 16px → PC 17px */
+  --fs-lg: 1.25rem; /* 20px: 카드 제목·요약 문장 */
+  --fs-xl: 1.5rem; /* 24px: 본문 섹션 제목 */
+  --fs-2xl: clamp(1.75rem, 1.45rem + 1.1vw, 2.25rem); /* 28→36px: 홈 섹션 제목 */
+  --fs-3xl: clamp(2.125rem, 1.65rem + 2vw, 3rem); /* 34→48px: 페이지 제목 */
+  --lh-body: 1.65;
+  --lh-snug: 1.5; /* 카드·표처럼 좁은 칸 */
+  --lh-tight: 1.3;
+
+  /* space */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4.5rem;
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 16px rgb(0 0 0 / 0.04);
+
+  --w-content: 1120px;
+  --w-prose: 720px;
+  --gutter: clamp(16px, 4vw, 32px);
+}

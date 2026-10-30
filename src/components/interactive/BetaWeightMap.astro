@@ -1,0 +1,409 @@
+---
+// 소프트 마스크 M에서 손실 가중치 맵 w = 1 + βM을 브라우저에서 다시 계산한다 (Canvas 2D).
+// 학습된 3DGS 결과를 다시 계산하는 기능이 아니다.
+import { Image, getImage } from "astro:assets";
+import Badge from "../Badge.astro";
+import { loadFigure } from "../../lib/figures";
+
+type Case = { figure: string; label: string };
+interface Props {
+  cases: Case[];
+  /** 논문에서 사용한 값 */
+  beta?: number;
+  betaMax?: number;
+}
+
+const { cases, beta = 0.8, betaMax = 2 } = Astro.props;
+const loaded = await Promise.all(
+  cases.map(async (c) => {
+    const fig = await loadFigure(c.figure);
+    const gt = fig.panels.gt;
+    const mask = fig.panels.mask;
+    if (!gt || !mask) throw new Error(`${c.figure}: gt·mask 패널 필요`);
+    // 마스크 값을 읽어야 하므로 무손실 PNG로 내보낸다.
+    const maskSrc = mask.image ? (await getImage({ src: mask.image, format: "png" })).src : null;
+    return { ...c, fig, gt, mask, maskSrc };
+  }),
+);
+const visible = loaded.every((c) => c.fig.visible);
+const anyReview = loaded.some((c) => c.fig.isReview);
+const uid = `beta-${Math.random().toString(36).slice(2, 8)}`;
+const wMax = 1 + betaMax;
+const print = Astro.locals.print === true;
+---
+
+{
+  print && visible && (
+    <figure class="beta-print">
+      <div class="bp-grid">
+        {loaded.map((c) => (
+          <div class="bp-cell">
+            <img src={c.maskSrc!} alt={c.mask.alt} width={c.mask.image!.width} height={c.mask.image!.height} />
+            <span>{c.label} 소프트 마스크 M</span>
+          </div>
+        ))}
+      </div>
+      <figcaption>
+        학습 손실의 픽셀 가중치는 w = 1 + β·M (논문 β = {beta})입니다. 웹 페이지에서는 β를 바꿔 가중치 맵을 직접 다시 계산해 볼 수
+        있습니다(학습된 3DGS 결과는 바뀌지 않음). 출처: 학위논문 그림 8 · 데이터: {loaded[0]?.fig.license}
+      </figcaption>
+    </figure>
+  )
+}
+
+<figure class="beta" data-beta data-wmax={wMax} hidden={print}>
+  <figcaption class="top">
+    <span class="title">소프트 마스크와 손실 가중치 맵 w = 1 + β·M</span>
+    <span class="badges"><Badge kind="computed" />{anyReview && visible && <Badge kind="review" />}</span>
+  </figcaption>
+  <p class="notice">
+    β를 바꾸면 <strong>학습 손실에 쓰는 픽셀 가중치만</strong> 브라우저에서 다시 계산합니다. 학습된 3DGS 결과는 β = {beta}로
+    학습한 하나뿐이며, 이 슬라이더로 바뀌지 않습니다.
+  </p>
+  {
+    visible ? (
+      <>
+        {cases.length > 1 && (
+          <div class="seg" role="group" aria-label="광원 영역 선택">
+            {loaded.map((c, i) => (
+              <button type="button" data-case-btn={i} aria-pressed={i === 0 ? "true" : "false"}>
+                {c.label}
+              </button>
+            ))}
+          </div>
+        )}
+        {loaded.map((c, i) => (
+          <div class="panels" data-case={i} data-mask-src={c.maskSrc} hidden={i !== 0}>
+            <div class="panel">
+              <span class="plabel">정답 영상</span>
+              <Image src={c.gt.image!} alt={c.gt.alt} widths={[360]} format="webp" quality={92} loading="lazy" />
+            </div>
+            <div class="panel">
+              <span class="plabel">소프트 마스크 M</span>
+              <img src={c.maskSrc!} alt={c.mask.alt} width={c.mask.image!.width} height={c.mask.image!.height} loading="lazy" />
+            </div>
+            <div class="panel">
+              <span class="plabel">가중치 맵 w</span>
+              <canvas
+                width={c.mask.image!.width}
+                height={c.mask.image!.height}
+                role="img"
+                aria-label={`β = ${beta}일 때 가중치 맵`}
+                data-canvas
+              />
+            </div>
+          </div>
+        ))}
+        <div class="control">
+          <label for={uid}>
+            β <output data-beta-out>{beta.toFixed(1)}</output>
+          </label>
+          <input id={uid} type="range" min="0" max={betaMax} step="0.1" value={beta} data-range aria-valuetext={`β ${beta}`} />
+          <button type="button" class="reset" data-reset data-value={beta}>논문 값({beta})으로</button>
+        </div>
+        <div class="legend" aria-hidden="true">
+          <span>w = 1.0</span>
+          <span class="bar" />
+          <span>{wMax.toFixed(1)}</span>
+        </div>
+        <dl class="stats" aria-live="polite">
+          <div><dt>광원 픽셀(M ≥ 0.5) 면적</dt><dd data-stat-area>–</dd></div>
+          <div><dt>가중치 합에서 광원 픽셀 비중</dt><dd data-stat-share>–</dd></div>
+          <div><dt>광원 픽셀 가중치 (M = 1)</dt><dd data-stat-peak>–</dd></div>
+        </dl>
+      </>
+    ) : (
+      <div class="placeholder" role="img" aria-label="공개 확인 전이라 숨긴 마스크 이미지">
+        <p><strong>공개 확인 전인 그림</strong><br />데이터셋·논문 그림의 공개 조건을 확인한 뒤 표시합니다.</p>
+      </div>
+    )
+  }
+  <figcaption class="bottom">
+    데이터: {loaded[0]?.fig.license}. 마스크는 학위논문 그림 8(인쇄 32쪽)의 ROI 확대 마스크를 잘라 쓴 것이라, 논문 PDF의 압축 때문에 값이 근사적입니다. 학습에서는
+    학습 영상마다 원래 해상도의 마스크를 사용했습니다. "광원 픽셀 비중"은 가중치의 분포만 보여주며, 실제 손실 기여는 픽셀별
+    오차 크기에 따라 달라집니다.
+  </figcaption>
+</figure>
+
+<script>
+  // viridis 근사 (5개 기준색 선형 보간)
+  const STOPS = [
+    [68, 1, 84],
+    [59, 82, 139],
+    [33, 145, 140],
+    [94, 201, 98],
+    [253, 231, 37],
+  ];
+  const colormap = (t: number) => {
+    const x = Math.min(1, Math.max(0, t)) * (STOPS.length - 1);
+    const i = Math.min(STOPS.length - 2, Math.floor(x));
+    const f = x - i;
+    const a = STOPS[i]!, b = STOPS[i + 1]!;
+    return [a[0]! + (b[0]! - a[0]!) * f, a[1]! + (b[1]! - a[1]!) * f, a[2]! + (b[2]! - a[2]!) * f];
+  };
+
+  const loadMask = (src: string) =>
+    new Promise<{ m: Float32Array; w: number; h: number }>((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement("canvas");
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        const ctx = c.getContext("2d", { willReadFrequently: true })!;
+        ctx.drawImage(img, 0, 0);
+        const d = ctx.getImageData(0, 0, c.width, c.height).data;
+        const m = new Float32Array(c.width * c.height);
+        for (let p = 0; p < m.length; p++) m[p] = (d[p * 4]! + d[p * 4 + 1]! + d[p * 4 + 2]!) / (3 * 255);
+        resolve({ m, w: c.width, h: c.height });
+      };
+      img.onerror = reject;
+      img.src = src;
+    });
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-beta]")) {
+    const range = root.querySelector<HTMLInputElement>("[data-range]");
+    if (!range) continue;
+    const wMax = Number(root.dataset.wmax);
+    const out = root.querySelector<HTMLOutputElement>("[data-beta-out]")!;
+    const statArea = root.querySelector<HTMLElement>("[data-stat-area]")!;
+    const statShare = root.querySelector<HTMLElement>("[data-stat-share]")!;
+    const statPeak = root.querySelector<HTMLElement>("[data-stat-peak]")!;
+    const cache = new Map<string, { m: Float32Array; w: number; h: number }>();
+    let active = root.querySelector<HTMLElement>("[data-case]:not([hidden])")!;
+
+    const render = async () => {
+      const beta = Number(range.value);
+      out.textContent = beta.toFixed(1);
+      range.setAttribute("aria-valuetext", `β ${beta.toFixed(1)}`);
+      const src = active.dataset.maskSrc!;
+      if (!cache.has(src)) cache.set(src, await loadMask(src));
+      const { m, w, h } = cache.get(src)!;
+      const canvas = active.querySelector<HTMLCanvasElement>("[data-canvas]")!;
+      const ctx = canvas.getContext("2d")!;
+      const img = ctx.createImageData(w, h);
+      let sumW = 0, sumLight = 0, nLight = 0;
+      for (let p = 0; p < m.length; p++) {
+        const wt = 1 + beta * m[p]!;
+        sumW += wt;
+        if (m[p]! >= 0.5) {
+          sumLight += wt;
+          nLight++;
+        }
+        const [r, g, b] = colormap((wt - 1) / (wMax - 1));
+        img.data[p * 4] = r!;
+        img.data[p * 4 + 1] = g!;
+        img.data[p * 4 + 2] = b!;
+        img.data[p * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      canvas.setAttribute("aria-label", `β = ${beta.toFixed(1)}일 때 가중치 맵`);
+      statArea.textContent = `${((nLight / m.length) * 100).toFixed(1)}%`;
+      statShare.textContent = `${((sumLight / sumW) * 100).toFixed(1)}%`;
+      statPeak.textContent = `${(1 + beta).toFixed(1)}배`;
+    };
+
+    range.addEventListener("input", render);
+    root.querySelector<HTMLButtonElement>("[data-reset]")?.addEventListener("click", (e) => {
+      range.value = (e.currentTarget as HTMLButtonElement).dataset.value!;
+      render();
+    });
+    for (const btn of root.querySelectorAll<HTMLButtonElement>("[data-case-btn]")) {
+      btn.addEventListener("click", () => {
+        for (const c of root.querySelectorAll<HTMLElement>("[data-case]")) c.hidden = c.dataset.case !== btn.dataset.caseBtn;
+        for (const b of root.querySelectorAll("[data-case-btn]")) b.setAttribute("aria-pressed", String(b === btn));
+        active = root.querySelector<HTMLElement>("[data-case]:not([hidden])")!;
+        render();
+      });
+    }
+    render();
+  }
+</script>
+
+<style>
+  .beta[hidden] {
+    display: none;
+  }
+  .beta-print {
+    margin: var(--sp-4) 0;
+    break-inside: avoid;
+  }
+  .bp-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .bp-cell img {
+    width: 100%;
+    height: auto;
+    border-radius: 3px;
+  }
+  .bp-cell span,
+  .beta-print figcaption {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  .beta {
+    margin: var(--sp-5) 0;
+    background: var(--c-viewer-bg);
+    color: var(--c-viewer-text);
+    border-radius: var(--radius);
+    padding: var(--sp-3);
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--sp-2);
+  }
+  .title {
+    font-weight: 700;
+    font-size: var(--fs-sm);
+  }
+  .badges {
+    display: inline-flex;
+    gap: var(--sp-1);
+  }
+  .notice {
+    margin: var(--sp-2) 0 var(--sp-3);
+    font-size: var(--fs-xs);
+    color: #d5d7db;
+    background: #1d1f23;
+    border-left: 3px solid var(--c-accent-on-dark);
+    padding: var(--sp-2) var(--sp-3);
+    border-radius: 0 4px 4px 0;
+  }
+  .seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    background: #24262b;
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--sp-3);
+  }
+  .seg button {
+    font: inherit;
+    font-size: var(--fs-xs);
+    color: #c9ccd1;
+    background: transparent;
+    border: 0;
+    border-radius: 4px;
+    padding: 0.35em 0.75em;
+    cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] {
+    background: var(--c-surface);
+    color: var(--c-text);
+    font-weight: 600;
+  }
+  .panels {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .panels[hidden] {
+    display: none;
+  }
+  .panel {
+    position: relative;
+  }
+  .panel :global(img),
+  .panel canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 4px;
+    aspect-ratio: 1 / 1;
+  }
+  .plabel {
+    position: absolute;
+    left: 6px;
+    top: 6px;
+    font-size: var(--fs-xs);
+    font-weight: 600;
+    padding: 0.05em 0.5em;
+    border-radius: 4px;
+    background: rgb(17 18 20 / 0.78);
+  }
+  .control {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-top: var(--sp-3);
+    flex-wrap: wrap;
+  }
+  .control label {
+    font-weight: 700;
+    min-width: 4.5em;
+  }
+  .control input {
+    flex: 1 1 200px;
+    accent-color: var(--c-accent-on-dark);
+  }
+  .reset {
+    font: inherit;
+    font-size: var(--fs-xs);
+    color: var(--c-viewer-text);
+    background: #24262b;
+    border: 1px solid #3a3d43;
+    border-radius: 4px;
+    padding: 0.3em 0.7em;
+    cursor: pointer;
+  }
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--fs-xs);
+    color: #a3a7ae;
+    margin-top: var(--sp-2);
+  }
+  .legend .bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, #440154, #3b528b, #21918c, #5ec962, #fde725);
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--sp-2);
+    margin: var(--sp-3) 0 0;
+  }
+  .stats div {
+    background: #1d1f23;
+    border-radius: 4px;
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .stats dt {
+    font-size: var(--fs-xs);
+    color: #a3a7ae;
+  }
+  .stats dd {
+    margin: 0;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .placeholder {
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    border: 1px dashed #3a3d43;
+    border-radius: var(--radius-sm);
+    color: #a3a7ae;
+    text-align: center;
+    padding: var(--sp-5);
+    font-size: var(--fs-sm);
+  }
+  .bottom {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-xs);
+    color: #a3a7ae;
+  }
+  @media (max-width: 560px) {
+    .stats {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

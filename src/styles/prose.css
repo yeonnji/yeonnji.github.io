@@ -1,0 +1,81 @@
+/* 연구 본문(MDX) 공통 스타일. 웹 상세 페이지와 인쇄본(/print)이 함께 쓴다. */
+  .prose h2 {
+    font-size: var(--fs-xl);
+    margin: var(--sp-7) 0 var(--sp-3);
+    padding-top: var(--sp-2);
+  }
+  .prose h2:first-child {
+    margin-top: 0;
+  }
+  .prose h3 {
+    font-size: var(--fs-lg);
+    margin: var(--sp-5) 0 var(--sp-2);
+  }
+  .prose p,
+  .prose ul,
+  .prose ol {
+    margin: 0 0 var(--sp-4);
+  }
+  .prose li {
+    margin-bottom: var(--sp-1);
+  }
+  .prose .callout {
+    border-left: 3px solid var(--c-accent);
+    background: var(--c-surface-2);
+    padding: var(--sp-3) var(--sp-4);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    margin: var(--sp-4) 0;
+  }
+  .prose .callout.limit {
+    border-left-color: var(--c-pending);
+    background: var(--c-pending-bg);
+  }
+  .prose .eq {
+    font-family: var(--font-mono);
+    font-size: var(--fs-sm);
+    background: var(--c-surface);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    padding: var(--sp-3) var(--sp-4);
+    margin: var(--sp-3) 0 var(--sp-4);
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  .prose table.simple {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-base);
+    line-height: var(--lh-snug);
+    margin: var(--sp-3) 0 var(--sp-5);
+    display: block;
+    overflow-x: auto;
+  }
+  .prose table.simple th,
+  .prose table.simple td {
+    border-bottom: 1px solid var(--c-border);
+    padding: var(--sp-2) var(--sp-3);
+    text-align: left;
+    vertical-align: top;
+  }
+  .prose table.simple th {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+    background: var(--c-surface-2);
+  }
+
+/* 관련 논문 목록 (연구 상세 페이지 본문 끝) */
+.prose .pubs ul {
+  padding-left: 1.1em;
+}
+.prose .pubs li {
+  margin-bottom: var(--sp-3);
+}
+.prose .pubmeta,
+.prose .publinks {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--c-text-3);
+}
+.prose .publinks a {
+  margin-right: var(--sp-3);
+}

@@ -1,0 +1,96 @@
+---
+import { profile } from "../data/profile";
+import { href } from "../lib/format";
+
+const nav = [
+  { label: "프로젝트", to: "/#projects", primary: true },
+  { label: "역량", to: "/#skills" },
+  { label: "이력", to: "/#cv" },
+  { label: "연락처", to: "/#contact" },
+];
+---
+
+<header class="site-header">
+  <div class="container bar">
+    <a class="brand" href={href("/")}>
+      <span class="brand-name">{profile.name}</span>
+      <span class="brand-role">2D/3D Scene Reconstruction</span>
+    </a>
+    <nav aria-label="주요 메뉴">
+      <ul>
+        {nav.map((n) => <li><a class:list={{ primary: n.primary }} href={href(n.to)}>{n.label}</a></li>)}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in srgb, var(--c-bg) 88%, transparent);
+    backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid var(--c-border);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--sp-4);
+    min-height: 56px;
+  }
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-2);
+    color: var(--c-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand-name {
+    font-weight: 700;
+    font-size: var(--fs-lg);
+  }
+  .brand-role {
+    font-size: var(--fs-xs);
+    color: var(--c-text-3);
+  }
+  ul {
+    display: flex;
+    gap: var(--sp-1);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  nav a {
+    display: inline-block;
+    padding: var(--sp-2) var(--sp-3);
+    color: var(--c-text-2);
+    text-decoration: none;
+    font-size: var(--fs-sm);
+    border-radius: var(--radius-sm);
+  }
+  nav a:hover {
+    background: var(--c-surface-2);
+    color: var(--c-text);
+  }
+  /* 프로젝트 메뉴만 파란 버튼 (헤더 높이는 그대로) */
+  nav a.primary {
+    background: var(--c-accent);
+    color: #fff;
+    font-weight: 600;
+  }
+  nav a.primary:hover {
+    background: var(--c-accent-strong);
+    color: #fff;
+  }
+  @media (max-width: 720px) {
+    .brand-role {
+      display: none;
+    }
+    nav a {
+      padding: var(--sp-2);
+    }
+  }
+</style>

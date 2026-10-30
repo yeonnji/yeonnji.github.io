@@ -1,0 +1,33 @@
+---
+// 아직 쓰지 않았거나 자료가 부족한 자리 표시. 본문(MDX) 섹션 안에 넣는다.
+interface Props {
+  /** 무엇을 보완할지 짧게 */
+  text?: string;
+}
+const { text = "자료를 정리해 보완할 예정입니다." } = Astro.props;
+---
+
+<p class="todo-note"><span class="chip">수정 예정</span>{text}</p>
+
+<style>
+  .todo-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-1) var(--sp-2);
+    margin: 0 0 var(--sp-4);
+    padding: var(--sp-3) var(--sp-4);
+    border: 1px dashed var(--c-pending);
+    border-radius: var(--radius-sm);
+    background: var(--c-pending-bg);
+    color: var(--c-text-2);
+    font-size: var(--fs-xs);
+    line-height: var(--lh-snug);
+  }
+  .chip {
+    font-size: var(--fs-2xs);
+    font-weight: 700;
+    color: var(--c-pending);
+    white-space: nowrap;
+  }
+</style>

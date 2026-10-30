@@ -1,0 +1,172 @@
+# 결과 이미지 목록. 공개 여부(status)를 그룹마다 관리한다.
+#   public  : 배포 빌드에 포함
+#   review  : 개발 서버(또는 ALLOW_REVIEW_ASSETS=true 빌드)에서만 표시, 배포 빌드에서는 자리표시로 대체
+#   private : 어디에도 표시하지 않음
+# 모든 이미지는 원본 3DGS 렌더러 결과가 실린 논문 그림에서 잘라낸 것이다(웹 렌더러 출력 아님).
+
+- id: illum-overview
+  status: public
+  kind: diagram
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 4 · 인쇄 19쪽" }
+  dataset: "Deep Blending · DrJohnson (그림 속 예시 이미지)"
+  license: "그림 속 영상: Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "제안 방법 전체 구성. 위쪽은 표준 3DGS 학습 흐름이고, 아래쪽이 추가한 소프트 마스크·가중치 맵·속성 정규화입니다."
+  panels:
+    main: { file: "illum/pipeline-overview.png", alt: "다중 시점 영상에서 SfM, 가우시안 초기화, 렌더링으로 이어지는 3DGS 흐름 아래에 소프트 마스크 생성, 가중치 맵, 픽셀 손실, 기하 정규화 블록이 연결된 구성도" }
+
+- id: illum-soft-mask
+  status: public
+  kind: diagram
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 6 · 인쇄 24쪽" }
+  dataset: "Deep Blending · DrJohnson"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "소프트 마스크 생성 과정. 선형 색공간 변환 → HSV·LAB 점수 → 임계값 이진 마스크 → 시그모이드로 경계를 부드럽게 만든 소프트 마스크."
+  panels:
+    main: { file: "illum/soft-mask-pipeline.png", alt: "샹들리에가 있는 실내 영상, 광원 점수 히트맵, 이진 마스크, 시그모이드 곡선, 부드러운 경계의 소프트 마스크가 순서대로 배치된 그림" }
+
+- id: illum-view1
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 7 · 인쇄 31쪽" }
+  dataset: "Deep Blending · DrJohnson 테스트 시점"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "View 1 전체 이미지. 빨간 상자는 Case 1(천장 형광등) 확대 영역입니다."
+  panels:
+    gt: { file: "illum/view1-gt.png", alt: "View 1 정답 영상: 천장 조명이 비치는 흰 문과 녹색 벽" }
+    3dgs: { file: "illum/view1-3dgs.png", alt: "View 1 표준 3DGS 렌더링: 빨간 상자 안 천장 조명 주변에 번진 밝은 얼룩" }
+    ours: { file: "illum/view1-ours.png", alt: "View 1 제안 방법 렌더링: 같은 빨간 상자 영역" }
+
+- id: illum-view2
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 7 · 인쇄 31쪽" }
+  dataset: "Deep Blending · DrJohnson 테스트 시점"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "View 2 전체 이미지. 빨간 상자는 Case 2(창문 자연광) 확대 영역입니다."
+  panels:
+    gt: { file: "illum/view2-gt.png", alt: "View 2 정답 영상: 액자가 걸린 녹색 벽과 창문 틈으로 들어오는 빛" }
+    3dgs: { file: "illum/view2-3dgs.png", alt: "View 2 표준 3DGS 렌더링" }
+    ours: { file: "illum/view2-ours.png", alt: "View 2 제안 방법 렌더링" }
+
+- id: illum-view3
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 7 · 인쇄 31쪽" }
+  dataset: "Deep Blending · DrJohnson 테스트 시점"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "View 3 전체 이미지. 빨간 상자는 Case 3(샹들리에) 확대 영역입니다."
+  panels:
+    gt: { file: "illum/view3-gt.png", alt: "View 3 정답 영상: 샹들리에와 초상화가 있는 거실" }
+    3dgs: { file: "illum/view3-3dgs.png", alt: "View 3 표준 3DGS 렌더링" }
+    ours: { file: "illum/view3-ours.png", alt: "View 3 제안 방법 렌더링" }
+
+- id: illum-roi-case1
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 8 · 인쇄 32쪽" }
+  dataset: "Deep Blending · DrJohnson"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "Case 1 · 천장 형광등 영역 확대."
+  panels:
+    gt: { file: "illum/roi-case1-gt.png", alt: "Case 1 정답: 천장 형광등 빛이 닿는 흰 문 상단" }
+    3dgs: { file: "illum/roi-case1-3dgs.png", alt: "Case 1 표준 3DGS: 조명 경계를 따라 번지고 일그러진 밝은 줄무늬" }
+    ours: { file: "illum/roi-case1-ours.png", alt: "Case 1 제안 방법: 같은 영역" }
+    mask: { file: "illum/roi-case1-mask.png", alt: "Case 1 소프트 마스크: 형광등 영역이 흰색" }
+
+- id: illum-roi-case2
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 8 · 인쇄 32쪽" }
+  dataset: "Deep Blending · DrJohnson"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "Case 2 · 창문 자연광 영역 확대."
+  panels:
+    gt: { file: "illum/roi-case2-gt.png", alt: "Case 2 정답: 창문 틈으로 들어오는 가로 빛줄기" }
+    3dgs: { file: "illum/roi-case2-3dgs.png", alt: "Case 2 표준 3DGS: 빛줄기 주변이 흐리게 번진 결과" }
+    ours: { file: "illum/roi-case2-ours.png", alt: "Case 2 제안 방법: 같은 영역" }
+    mask: { file: "illum/roi-case2-mask.png", alt: "Case 2 소프트 마스크: 가로 빛줄기 영역이 흰색" }
+
+- id: illum-roi-case3
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 8 · 인쇄 32쪽" }
+  dataset: "Deep Blending · DrJohnson"
+  license: "Deep Blending 데이터셋 (Hedman et al., SIGGRAPH Asia 2018)"
+  caption: "Case 3 · 샹들리에 영역 확대."
+  panels:
+    gt: { file: "illum/roi-case3-gt.png", alt: "Case 3 정답: 샹들리에 금속 몸체와 전구" }
+    3dgs: { file: "illum/roi-case3-3dgs.png", alt: "Case 3 표준 3DGS: 전구 주변으로 바늘 모양 아티팩트가 퍼진 결과" }
+    ours: { file: "illum/roi-case3-ours.png", alt: "Case 3 제안 방법: 같은 영역" }
+    mask: { file: "illum/roi-case3-mask.png", alt: "Case 3 소프트 마스크: 전구 영역이 흰색" }
+
+- id: endo-compare1
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 9 · 인쇄 34쪽" }
+  dataset: "C3VD"
+  license: "C3VD (Bobrow et al., 2023) · CC BY-NC-SA 4.0 — 이 이미지도 같은 조건"
+  caption: "C3VD 테스트 프레임 1."
+  panels:
+    input: { file: "endo/compare1-input.png", alt: "내시경 입력 영상 1: 점막 위에 흰 정반사 점이 여러 개" }
+    3dgs: { file: "endo/compare1-3dgs.png", alt: "표준 3DGS 복원 1: 정반사 점이 남아 있음" }
+    ours: { file: "endo/compare1-ours.png", alt: "제안 방법 복원 1: 정반사 점이 줄어든 조직 외관" }
+
+- id: endo-compare2
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 9 · 인쇄 34쪽" }
+  dataset: "C3VD"
+  license: "C3VD (Bobrow et al., 2023) · CC BY-NC-SA 4.0 — 이 이미지도 같은 조건"
+  caption: "C3VD 테스트 프레임 2."
+  panels:
+    input: { file: "endo/compare2-input.png", alt: "내시경 입력 영상 2" }
+    3dgs: { file: "endo/compare2-3dgs.png", alt: "표준 3DGS 복원 2" }
+    ours: { file: "endo/compare2-ours.png", alt: "제안 방법 복원 2" }
+
+- id: endo-compare3
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 9 · 인쇄 34쪽" }
+  dataset: "C3VD"
+  license: "C3VD (Bobrow et al., 2023) · CC BY-NC-SA 4.0 — 이 이미지도 같은 조건"
+  caption: "C3VD 테스트 프레임 3."
+  panels:
+    input: { file: "endo/compare3-input.png", alt: "내시경 입력 영상 3: 둥근 고리 모양으로 정반사가 많음" }
+    3dgs: { file: "endo/compare3-3dgs.png", alt: "표준 3DGS 복원 3" }
+    ours: { file: "endo/compare3-ours.png", alt: "제안 방법 복원 3" }
+
+- id: endo-compare4
+  status: public
+  kind: comparison
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 9 · 인쇄 34쪽" }
+  dataset: "C3VD"
+  license: "C3VD (Bobrow et al., 2023) · CC BY-NC-SA 4.0 — 이 이미지도 같은 조건"
+  caption: "C3VD 테스트 프레임 4."
+  panels:
+    input: { file: "endo/compare4-input.png", alt: "내시경 입력 영상 4" }
+    3dgs: { file: "endo/compare4-3dgs.png", alt: "표준 3DGS 복원 4" }
+    ours: { file: "endo/compare4-ours.png", alt: "제안 방법 복원 4" }
+
+- id: endo-decomp
+  status: public
+  kind: grid
+  source: { doc: "공학석사학위논문 (2026.08)", location: "그림 10 · 인쇄 35쪽" }
+  dataset: "C3VD"
+  license: "C3VD (Bobrow et al., 2023) · CC BY-NC-SA 4.0 — 이 이미지도 같은 조건"
+  caption: "정반사 성분 분리 결과 (시점 4개). 입력, 분리한 정반사 성분, 정반사로 판정한 영역(녹색)을 입력에 겹친 결과 순서입니다."
+  panels:
+    input1: { file: "endo/decomp1-input.png", alt: "입력 1" }
+    input2: { file: "endo/decomp2-input.png", alt: "입력 2" }
+    input3: { file: "endo/decomp3-input.png", alt: "입력 3" }
+    input4: { file: "endo/decomp4-input.png", alt: "입력 4" }
+    highlight1: { file: "endo/decomp1-highlight.png", alt: "분리한 정반사 성분 1: 검은 배경에 흰 점" }
+    highlight2: { file: "endo/decomp2-highlight.png", alt: "분리한 정반사 성분 2" }
+    highlight3: { file: "endo/decomp3-highlight.png", alt: "분리한 정반사 성분 3" }
+    highlight4: { file: "endo/decomp4-highlight.png", alt: "분리한 정반사 성분 4" }
+    overlay1: { file: "endo/decomp1-overlay.png", alt: "정반사 영역을 녹색으로 겹친 입력 1" }
+    overlay2: { file: "endo/decomp2-overlay.png", alt: "정반사 영역을 녹색으로 겹친 입력 2" }
+    overlay3: { file: "endo/decomp3-overlay.png", alt: "정반사 영역을 녹색으로 겹친 입력 3" }
+    overlay4: { file: "endo/decomp4-overlay.png", alt: "정반사 영역을 녹색으로 겹친 입력 4" }
+
+# ---------- 프로젝트 화면 ----------
+# 사용자가 portfolio_web/images/<경험 id>/에 넣은 이미지만 등록한다. 파일은 src/assets/figures/<public|review>/projects/<경험 id>/.
