@@ -4,7 +4,7 @@ import DetailLayout from "../../layouts/DetailLayout.astro";
 import { profile } from "../../data/profile";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("work");
+  const entries = await getCollection("work", (e) => e.data.card.group !== "hidden");
   return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
 }
 

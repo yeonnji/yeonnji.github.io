@@ -34,8 +34,6 @@ const loaded = await Promise.all(
 );
 const visible = loaded.every((c) => c.fig.visible);
 const anyReview = loaded.some((c) => c.fig.isReview);
-const sources = [...new Set(loaded.map((c) => `${c.fig.source.doc} ${c.fig.source.location}`))];
-const licenses = [...new Set(loaded.map((c) => c.fig.license))];
 const uid = `cmp-${Math.random().toString(36).slice(2, 8)}`;
 const first = pairs[0]!;
 // 인쇄본: 슬라이더 대신 첫 번째 비교 쌍을 사례마다 나란히 놓는다.
@@ -125,7 +123,6 @@ const print = Astro.locals.print === true;
   <figcaption class="bottom">
     {caption}
     {print && printLimit && printLimit < cases.length && ` 인쇄본에는 ${cases.length}개 중 ${printLimit}개를 실었습니다(웹에서 전부 비교 가능).`}
-    <span class="src">출처: {sources.join(" / ")} · 논문 그림에서 같은 크기로 잘라낸 이미지 (렌더링 결과는 원본 3DGS 렌더러 출력) · 데이터: {licenses.join(" / ")}</span>
   </figcaption>
   <script type="application/json" data-labels set:html={JSON.stringify(labels)} />
 </figure>
@@ -195,8 +192,9 @@ const print = Astro.locals.print === true;
 <style>
   .cmp {
     margin: var(--sp-5) 0;
-    background: var(--c-viewer-bg);
-    color: var(--c-viewer-text);
+    background: var(--c-surface);
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
     border-radius: var(--radius);
     padding: var(--sp-3);
   }
@@ -211,12 +209,12 @@ const print = Astro.locals.print === true;
   /* 인쇄본 */
   .cmp.print {
     background: none;
+    border: 0;
     color: var(--c-text);
     padding: 0;
     break-inside: avoid;
   }
-  .cmp.print .bottom,
-  .cmp.print .src {
+  .cmp.print .bottom {
     color: var(--c-text-3);
   }
   /* 사례 두 개를 한 줄에, 각 사례는 비교 쌍 두 장 */
@@ -271,14 +269,15 @@ const print = Astro.locals.print === true;
     display: inline-flex;
     flex-wrap: wrap;
     gap: 2px;
-    background: #24262b;
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border);
     padding: 2px;
     border-radius: var(--radius-sm);
   }
   .seg button {
     font: inherit;
     font-size: var(--fs-xs);
-    color: #c9ccd1;
+    color: var(--c-text-2);
     background: transparent;
     border: 0;
     border-radius: 4px;
@@ -289,13 +288,15 @@ const print = Astro.locals.print === true;
     background: var(--c-surface);
     color: var(--c-text);
     font-weight: 600;
+    box-shadow: 0 0 0 1px var(--c-border-strong);
   }
   .seg button:focus-visible {
-    outline: 2px solid var(--c-accent-on-dark);
+    outline: 2px solid var(--c-accent);
   }
   .stage {
     position: relative;
     overflow: hidden;
+    border: 1px solid var(--c-border);
     border-radius: 4px;
     touch-action: pan-y;
     cursor: ew-resize;
@@ -343,6 +344,7 @@ const print = Astro.locals.print === true;
   .lab.left {
     left: 8px;
     background: rgb(17 18 20 / 0.78);
+    color: var(--c-viewer-text);
   }
   .lab.right {
     right: 8px;
@@ -355,19 +357,19 @@ const print = Astro.locals.print === true;
   }
   .range input {
     width: 100%;
-    accent-color: var(--c-accent-on-dark);
+    accent-color: var(--c-accent);
   }
   .hint {
     font-size: var(--fs-xs);
-    color: #a3a7ae;
+    color: var(--c-text-3);
   }
   .placeholder {
     display: grid;
     place-items: center;
     min-height: 180px;
-    border: 1px dashed #3a3d43;
+    border: 1px dashed var(--c-border-strong);
     border-radius: var(--radius-sm);
-    color: #a3a7ae;
+    color: var(--c-text-3);
     text-align: center;
     padding: var(--sp-5);
     font-size: var(--fs-sm);
@@ -375,11 +377,6 @@ const print = Astro.locals.print === true;
   .bottom {
     margin-top: var(--sp-2);
     font-size: var(--fs-sm);
-    color: #d5d7db;
-  }
-  .src {
-    display: block;
-    font-size: var(--fs-xs);
-    color: #a3a7ae;
+    color: var(--c-text-2);
   }
 </style>

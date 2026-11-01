@@ -4,16 +4,15 @@ headline: "'색감이 다르다', '노이즈가 많다' 같은 평가 의견을 
 summary: "기존 3차원 심장 초음파 볼륨 렌더러의 결과를 상용 장비 영상에 가깝게 보완하는 산학과제였습니다. 처음 접한 렌더링 코드와 파라미터를 분석하고, 10개 영상의 1차 비교평가를 품질·움직임 7개 항목으로 나눠 해석해 컬러맵과 조명·산란 파라미터의 조정 방향을 정리했습니다. 데모 오류 3건도 재현해 등록했습니다."
 card:
   order: 3
+  group: hidden
   size: normal
   kind: "산학과제"
-  todo:
-    - "컬러맵 색상표 등 결과 이미지"
-    - "직접 수정한 셰이더·코드가 있었는지 확인"
   blurb: "기존 3차원 심장 초음파 볼륨 렌더러의 평가 의견을 조명·산란·컬러맵 변수와 재현 가능한 오류로 정리하고, 요구 색상에 맞춘 컬러맵을 제작·적용했습니다."
   role: "렌더러 분석 · 파라미터 실험 · 컬러맵"
   period: "2024.09 – 2024.12"
   tags: ["Direct3D 11", "HLSL", "C++ · C#"]
   categories: ["3d"]
+  thumb: { figure: "us-result", panels: ["main"] }
 period: "2024.09 – 2024.12"
 org: "인하대학교 미디어인공지능연구실 · 의료영상 산학과제"
 role: "기존 렌더러 분석 · 파라미터 실험 · 컬러맵 제작·적용 · 데모 QA · 평가 분석"
@@ -24,6 +23,7 @@ stack: ["C++", "C#", "Direct3D 11", "SharpDX", "HLSL", "Ray casting", "AO · SSS
 import RoleTable from "../../components/RoleTable.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
 import MetricTable from "../../components/MetricTable.astro";
+import Figure from "../../components/Figure.astro";
 
 ## 해결하려던 문제
 
@@ -47,7 +47,7 @@ import MetricTable from "../../components/MetricTable.astro";
 
 <RoleTable
   mine={[
-    "기존 C++·C# 렌더링 코드와 HLSL 셰이더 분석, 파라미터가 화면에 주는 영향 정리",
+    "기존 C++·C# 렌더링 코드와 HLSL 셰이더 분석(코드는 직접 수정하지 않음), 파라미터가 화면에 주는 영향 정리",
     "주요 파라미터 반복 변경 실험, 요구 색상에 맞춘 컬러맵 제작·적용",
     "협력 기업 현장 회의 참석, 비교 대상 상용 장비를 직접 사용해 목표 영상 확인",
     "1차 비교평가 결과 분석과 보완 항목 정리",
@@ -98,11 +98,15 @@ import MetricTable from "../../components/MetricTable.astro";
 
 세 건 모두 재현 조건과 함께 버그리포트에 등록했습니다.
 
+<Figure id="us-ao" maxWidth="640px" />
+
 ## 결과와 검증
 
 - 평가 결과를 보완 항목과 조정 방향으로 정리했고, 컬러맵을 제작·적용했습니다.
 - 데모 오류 3건을 재현·등록했습니다.
 - "요구사항에 맞게 빠르게 마무리했다"는 피드백을 받았습니다.
+
+<Figure id="us-result" maxWidth="640px" />
 
 ## 한계와 추가 과제
 
@@ -110,6 +114,6 @@ import MetricTable from "../../components/MetricTable.astro";
 
 - 위 점수는 보완 항목을 찾기 위한 **개선 전 기준선**입니다. 2차·최종 평가와 개선 전후의 같은 조건 비교 점수가 없어, 품질 개선 수치로 쓰지 않습니다.
 - 렌더링 엔진은 기존 코드이며, 최종 제품 적용이나 임상 성과는 확인되지 않았습니다.
-- 원본 영상·발표 자료·코드는 기밀이라 이 페이지에 싣지 않았습니다.
+- 비교 대상 장비 영상, 발표 자료, 렌더러 코드는 기밀이라 싣지 않았습니다.
 
 </div>

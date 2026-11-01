@@ -3,16 +3,16 @@ title: "게임 연령등급·위험요소 멀티모달 분류"
 headline: "평균 정확도만 보지 않고, 등급을 크게 틀리는 오류와 일부 데이터에만 있는 위험요소 라벨을 학습과 평가 구조에 반영했습니다."
 summary: "게임 설명 텍스트와 스크린샷으로 연령등급과 7개 위험요소를 함께 예측하는 대학원 수업 산학 프로젝트(ARGUS)입니다. 전달받은 42만여 건의 데이터를 정제해 학습셋을 만들고, 멘토 아이디어와 기존 코드를 바탕으로 멀티모달 모델과 손실 함수를 수정·구현했으며, 판정 근거를 보여주는 웹 프로토타입까지 연결했습니다."
 card:
-  order: 6
+  order: 5
+  group: ai
   size: normal
   kind: "수업 프로젝트"
-  todo:
-    - "웹 프로토타입 화면 이미지"
   blurb: "42만여 건의 게임 데이터를 정제하고, 텍스트·이미지 모델에 등급 차이를 반영한 손실과 라벨이 있는 데이터만 쓰는 위험요소 손실을 구현해 웹 프로토타입으로 연결했습니다."
   role: "데이터 정제 · 모델 수정·평가 · 웹 프로토타입"
   period: "2026.03 – 2026.07"
   tags: ["PyTorch", "XLM-R · ViT", "Flask"]
   categories: ["ai"]
+  thumb: { figure: "argus-architecture", panels: ["thumb"] }
 period: "2026.03 – 2026.07"
 org: "인공지능융합프로젝트2 (대학원 수업) · 기업 산학 멘토링"
 role: "데이터 전처리·학습셋 구성, 멀티모달 모델 구조 수정, 학습·평가, 웹 프로토타입과 판정 근거 시각화"
@@ -22,10 +22,11 @@ stack: ["Python", "PyTorch", "Transformers", "XLM-RoBERTa", "ViT", "Cross-modal 
 
 import RoleTable from "../../components/RoleTable.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
+import Figure from "../../components/Figure.astro";
 
 ## 해결하려던 문제
 
-게임 콘텐츠가 늘어나면서 수작업 심의의 부담과 판정 일관성이 문제가 되고 있었습니다. 단순 평균 정확도만으로는 부족한 이유가 두 가지 있었습니다.
+게임 콘텐츠가 늘어나면서 수작업 심의의 부담과 판정 일관성이 문제가 되고 있었습니다. 평균 정확도만으로는 모델을 판단하기 어려웠습니다.
 
 - **오류의 비용이 다릅니다.** 전체이용가를 청소년이용불가로 판정하는 것처럼 등급 차이가 큰 오분류는 실제 심의에서 훨씬 치명적입니다.
 - **위험요소 라벨이 일부에만 있습니다.** 라벨이 없는 데이터를 "위험요소 없음"으로 학습하면 모델이 잘못된 정답을 배웁니다.
@@ -33,7 +34,7 @@ import FlowDiagram from "../../components/FlowDiagram.astro";
 <FlowDiagram
   title="데이터에서 판정 화면까지"
   nodes={[
-    { label: "플랫폼별 게임 데이터", sub: "42만여 건 (회사 수집)", kind: "ext" },
+    { label: "플랫폼별 게임 데이터", sub: "42만여 건", kind: "ext" },
     { label: "정제·학습셋 구성", sub: "병합·중복 제거·등급 매핑", kind: "mine" },
     { label: "멀티모달 모델", sub: "텍스트 + 이미지 · 손실 수정", kind: "mine" },
     { label: "웹 프로토타입", sub: "예상 등급·위험점수·근거", kind: "mine" },
@@ -64,22 +65,30 @@ import FlowDiagram from "../../components/FlowDiagram.astro";
 ## 주요 판단과 선택 이유
 
 - **등급을 크게 틀릴수록 더 큰 벌점을 줬습니다.** 등급 차이의 제곱과 클래스 가중치를 반영하는 Distance Penalty를 손실에 넣었고, 평가에서도 이런 대폭 오분류를 따로 보는 지표(CER)를 썼습니다.
-- **라벨이 없는 것을 위험이 없는 것으로 보지 않았습니다.** 위험요소 라벨이 있는 데이터만 위험요소 손실에 반영하는 Masked Risk Loss를 구현했습니다.
-- **평균 하나로 결과를 요약하지 않았습니다.** Accuracy와 함께 Macro·Weighted F1, 혼동행렬, 위험요소별 F1·ROC-AUC를 봐서 강한 부분과 실패한 부분을 나눠 설명했습니다.
+- **위험요소 라벨이 없는 데이터는 위험요소 손실에서 뺐습니다.** 라벨이 없다고 위험이 없는 것은 아니어서, 라벨이 있는 데이터만 반영하는 Masked Risk Loss를 구현했습니다.
+- **결과는 지표 여러 개로 나눠 봤습니다.** Accuracy와 함께 Macro·Weighted F1, 혼동행렬, 위험요소별 F1·ROC-AUC를 봐서 강한 부분과 실패한 부분을 나눠 설명했습니다.
 - **서버 접근이 제한된 환경에서는 실험 조건을 미리 묶어 전달했습니다.** 필요한 실험 조건, 파라미터, 확인 사항을 사전에 정리해 서버 담당자에게 한 번에 전달했습니다.
 
 ## 구현·실험 과정
 
 1. 회사가 수집한 게임 420,747건을 플랫폼별로 병합하고, 중복과 이미지·등급 누락 데이터를 제외해 학습셋을 만들었습니다. 학습·검증·테스트는 90:5:5로 나눴습니다.
 2. 텍스트와 이미지 특징을 결합한 모델에 위 두 손실을 넣어 학습하고 파라미터를 조정했습니다.
+
+<Figure id="argus-architecture" panels={["main"]} wide />
+
 3. Flask 추론 서버와 HTML·CSS·JavaScript 화면을 만들어, 게임 제목·설명·스크린샷을 넣으면 예상 등급(GRAC·ESRB), 7개 위험점수, 판정 근거가 나오게 했습니다.
+
+<Figure id="argus-demo" panels={["adult", "everyone"]} labels={{ adult: "청소년 이용불가 판정", everyone: "전체 이용가 판정" }} wide />
+
 4. 중간발표에서 설명 가능성이 부족하다는 피드백을 받아, 이미지 attention heatmap, cross-modal attention 가중치, 텍스트 기여도 시각화를 추가했습니다.
+
+<Figure id="argus-xai" />
 
 ## 결과와 검증
 
 <table class="simple">
   <thead>
-    <tr><th>평가 (최종 모델)</th><th>값</th></tr>
+    <tr><th>평가</th><th>값</th></tr>
   </thead>
   <tbody>
     <tr><td>테스트 표본</td><td>21,038건</td></tr>
@@ -92,13 +101,4 @@ import FlowDiagram from "../../components/FlowDiagram.astro";
 
 출처: 최종발표·보고서 평가표. CER은 개선 폭이 아니라 최종 모델의 오류를 측정한 값입니다.
 
-- 도박·범죄·약물은 양성 데이터가 부족해 F1이 0이었습니다. 정확도가 높아 보여도 실제 위험 사례를 하나도 찾지 못한 것이어서, 데이터 불균형을 한계로 보고서에 정리했습니다.
-
-## 한계와 추가 과제
-
-<div class="callout limit">
-
-- 손실 함수를 바꾸기 전과 후를 같은 조건에서 비교한 수치는 이 페이지에 싣지 않았습니다. 위 값은 최종 모델의 평가입니다.
-- 희소 위험요소(도박·범죄·약물)는 데이터를 보강하기 전에는 판정에 쓰기 어렵습니다.
-
-</div>
+- 위험요소별로 나눠 평가해, 평균 정확도에 가려져 있던 실패를 찾았습니다. 도박·범죄·약물은 양성 데이터가 부족해 F1이 0이었고, 원인을 데이터 불균형으로 분석해 보고서에 정리했습니다.

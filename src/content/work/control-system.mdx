@@ -4,10 +4,9 @@ headline: "제조사마다 다른 Switch·CCTV·NVR의 프로토콜과 SDK를 �
 summary: "관리자가 여러 네트워크 장비의 상태와 이벤트를 건물·도면 중심의 한 화면에서 관리하기 위한 신규 통합관제시스템입니다. 화면 개발을 제외한 시스템 기획, 데이터베이스·아키텍처 설계, 장비 연동과 백엔드 개발을 맡았고, 사무실의 장비로 핵심 흐름을 검증했습니다."
 card:
   order: 7
+  group: system
   size: normal
   kind: "실무"
-  todo:
-    - "시스템 아키텍처·ERD 그림"
   blurb: "Switch·CCTV·NVR의 서로 다른 프로토콜과 SDK를 분석해 상태·영상·이벤트를 하나의 관제 백엔드로 모으는 구조를 설계·구현하고, 사무실 장비로 핵심 흐름을 검증했습니다."
   role: "시스템·DB 설계 · 백엔드·장비 연동 개발"
   period: "2024.03 – 2024.07"
@@ -18,8 +17,9 @@ card:
     - { label: "장비별 연동부", mine: true }
     - { label: "공통 백엔드 · DB", mine: true }
     - { label: "관제 화면" }
+  thumb: { figure: "ctrl-screens", panels: ["thumb"] }
 period: "2024.03 – 2024.07"
-org: "(주)힌트 기업부설연구소"
+org: "㈜에이치아이엔티 기업부설연구소"
 role: "시스템 기획, 데이터베이스·아키텍처 설계, 이기종 장비 연동과 백엔드 전체 개발, React 프런트엔드 연동 지원"
 team: "수석연구원 1명, 연구원 1명, 장비 제조사 담당자"
 stack: ["Node.js 20", "Express", "MariaDB", "Sequelize", "C# ASP.NET Core", "REST API", "WebSocket", "JWT", "SNMP v2c", "RTSP", "FFmpeg"]
@@ -27,6 +27,7 @@ stack: ["Node.js 20", "Express", "MariaDB", "Sequelize", "C# ASP.NET Core", "RES
 
 import RoleTable from "../../components/RoleTable.astro";
 import FlowDiagram from "../../components/FlowDiagram.astro";
+import Figure from "../../components/Figure.astro";
 
 ## 해결하려던 문제
 
@@ -38,10 +39,9 @@ Switch·CCTV·NVR은 장비 종류와 제조사에 따라 상태 조회, 영상 
     { label: "Switch · CCTV · NVR", sub: "SNMP · 제조사 API · RTSP · SDK", kind: "ext" },
     { label: "장비별 연동부", sub: "Node.js 수집기 · C# NVR 서비스", kind: "mine" },
     { label: "공통 관제 백엔드", sub: "Express · MariaDB", kind: "mine" },
-    { label: "관제 화면", sub: "React (화면 담당 개발자)", kind: "team" },
+    { label: "관제 화면", sub: "React", kind: "team" },
   ]}
   edges={["상태·영상·이벤트", "REST", "WebSocket · REST"]}
-  caption="개념도입니다. 장비 주소와 고객 정보는 싣지 않았습니다."
 />
 
 ## 담당 범위와 협업
@@ -56,7 +56,7 @@ Switch·CCTV·NVR은 장비 종류와 제조사에 따라 상태 조회, 영상 
     "JWT 인증, 비밀번호 해시, 입력 검증",
   ]}
   others={[
-    "관제 화면 개발 (화면 담당 개발자, 본인은 API 연동 지원)",
+    "관제 화면 개발 (화면 담당 개발자)",
     "기능 지원 여부·API 자료 제공 (장비 제조사)",
   ]}
   othersTitle="협업 범위"
@@ -79,13 +79,11 @@ Switch·CCTV·NVR은 장비 종류와 제조사에 따라 상태 조회, 영상 
 ## 결과와 검증
 
 - 사무실의 Switch·CCTV·NVR 각 1대로 상태 조회, 영상 재생, 이벤트 수신·저장·화면 전달까지 핵심 흐름을 확인했습니다.
+- 화면을 제외한 기획·데이터베이스·아키텍처 설계와 장비 연동·백엔드 개발을 맡아 사무실 검증까지 마쳤습니다.
 - 산출물: 데이터베이스·아키텍처 설계, 백엔드 소스, NVR 연동 서비스, REST API와 Postman 문서.
 
-## 한계와 추가 과제
+아래는 사용자 인터페이스 설계서의 화면입니다. 화면은 담당 개발자가 만들었고, 화면에 나오는 장비 상태·장애 이벤트는 본인이 만든 백엔드가 수집해 전달합니다.
 
-<div class="callout limit">
+<Figure id="ctrl-dashboard" wide />
 
-- 개발 후 퇴사해 납품·현장 적용·운영에는 참여하지 않았습니다. 성과 범위는 기획·설계·개발과 사무실 개발환경 검증까지입니다.
-- 장비별 1대로 검증했으며, 다수 장비 환경의 부하나 장애 상황은 확인하지 않았습니다.
-
-</div>
+<Figure id="ctrl-screens" panels={["nms", "incidents"]} labels={{ nms: "NMS · Switch 포트 상태", incidents: "장애 이력" }} />

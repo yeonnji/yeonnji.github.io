@@ -10,7 +10,7 @@
   experience: illumination-3dgs
   links:
     - { label: "DOI", href: "https://doi.org/10.5626/JOK.2026.53.4.304" }
-    - { label: "코드", href: "https://github.com/yeonnji/paper-jok2026" }
+    - { label: "코드 (최신 버전)", href: "https://github.com/yeonnji/paper-jok2026" }
 
 - id: mue2026
   order: 2
@@ -22,7 +22,7 @@
   award: "Best Paper Award"
   experience: endoscopic-specular
   links:
-    - { label: "코드", href: "https://github.com/yeonnji/paper-mue2026" }
+    - { label: "코드 (최신 버전)", href: "https://github.com/yeonnji/paper-mue2026" }
 
 - id: thesis2026
   order: 3

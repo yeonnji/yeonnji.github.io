@@ -21,13 +21,6 @@ export const skills: Skill[] = [
     ],
   },
   {
-    name: "렌더링 분석·품질 평가",
-    tech: ["C++", "C#", "Direct3D 11", "HLSL"],
-    scope:
-      "기존 볼륨 렌더러의 C++·C# 코드와 HLSL 셰이더를 분석하고, 주요 파라미터를 바꿔 가며 화질 변화를 실험했습니다. 요구 색상에 맞춘 컬러맵을 제작·적용하고 비교평가 결과를 분석했습니다.",
-    links: [{ id: "ultrasound-render", label: "심장 초음파 렌더링 실험" }],
-  },
-  {
     name: "AI 모델 개발·데이터 검증",
     tech: ["Python", "PyTorch", "Transformers"],
     scope:

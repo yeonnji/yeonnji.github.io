@@ -74,6 +74,23 @@ code {
   word-break: break-all;
 }
 
+/* 코드 블록(Shiki): 블록 배경 위에 인라인 code의 밝은 배경·테두리가 겹치지 않게 */
+pre {
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+}
+
+pre code {
+  font-size: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  word-break: normal;
+}
+
 .container {
   width: 100%;
   max-width: calc(var(--w-content) + var(--gutter) * 2);

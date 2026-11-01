@@ -19,15 +19,14 @@ export type CvItem = {
 export type CvGroup = { id: string; title: string; items: CvItem[] };
 
 const company: CvItem = {
-  title: "(주)힌트 기업부설연구소",
+  title: "㈜에이치아이엔티 기업부설연구소",
   period: monthSpan("2021.10", "2024.07"),
-  meta: "정규직 · R&D, 시스템 SW·응용프로그램 개발",
+  meta: "정규직 · 선임연구원 · R&D, 시스템 SW·응용프로그램 개발",
+  desc: "그 밖에 라이다·카메라 복합 경계 시스템의 QGIS 기반 지도 화면 개발 참여",
   summary: "시스템 SW 개발",
   projects: [
     { id: "lidar-ops", label: "라이다 운용 프로그램" },
     { id: "control-system", label: "이기종 장비 통합관제" },
-    { id: "gis-boundary", label: "경계 GIS" },
-    { id: "ems-dashboard", label: "EMS 화면" },
   ],
 };
 
@@ -36,13 +35,11 @@ const lab: CvItem = {
   period: monthSpan("2024.09", "2026.08"),
   meta: "석사과정 연구·산학과제 · 3D 장면 복원 연구",
   summary: "3D 장면 복원 연구",
+  desc: "그 밖에 의료영상 산학과제에서 3D 심장 초음파 볼륨 렌더러 파라미터 실험·컬러맵 제작, Unity 선반 가상훈련 콘텐츠 기획·개발(연구실 과제), NPC 병렬 스케줄링 공동연구(제2저자) 참여",
   projects: [
     { id: "illumination-3dgs", label: "광원 복원 연구" },
     { id: "endoscopic-specular", label: "내시경 정반사 연구" },
-    { id: "ultrasound-render", label: "심장 초음파 렌더링" },
     { id: "hospital-event", label: "병원 관제 연동" },
-    { id: "unity-training", label: "Unity 가상훈련" },
-    { id: "npc-parallel", label: "NPC 병렬 스케줄링" },
   ],
 };
 
@@ -90,6 +87,56 @@ export const awards: CvGroup = {
   ],
 };
 
+/** 논문. 상세 데이터는 publications.yaml, 여기는 이력용 한 줄씩 (최신순) */
+export const papers: CvGroup = {
+  id: "papers",
+  title: "논문",
+  items: [
+    {
+      title: "3차원 가우시안 스플래팅의 조명 복원 기법 연구",
+      period: "2026.08",
+      meta: "인하대학교 공학석사학위논문",
+      projects: [{ id: "illumination-3dgs", label: "광원 복원 연구" }],
+    },
+    {
+      title: "3차원 가우시안 스플래팅에서의 조명 표현 개선법",
+      period: "2026.04",
+      meta: "정보과학회논문지 53(4) · 제1저자",
+      projects: [{ id: "illumination-3dgs", label: "광원 복원 연구" }],
+    },
+    {
+      title: "Removal of Specular Highlights in Endoscopic Images using 3D Gaussian Splatting",
+      period: "2026.04",
+      meta: "MUE 2026 · 제1저자 · Best Paper Award",
+      projects: [{ id: "endoscopic-specular", label: "내시경 정반사 연구" }],
+    },
+    {
+      title: "조도 중심 SfM 기법을 활용한 고정밀 Gaussian Splatting",
+      period: "2025.07",
+      meta: "KCC 2025 · 제1저자 · 우수논문상",
+      projects: [{ id: "illumination-3dgs", label: "광원 복원 연구" }],
+    },
+    {
+      title: "A Parallel Scheduling Method for Large-Scale NPC Management Based on State Classification",
+      period: "2025.05",
+      meta: "한국차세대컴퓨팅학회 학술대회 · 제2저자 (Unity DOTS 구현·실험 지원)",
+    },
+  ],
+};
+
+/** 특허. 발명자는 본인 포함 3인, 특허권자는 회사 */
+export const patents: CvGroup = {
+  id: "patents",
+  title: "특허",
+  items: [
+    {
+      title: "라이다 기반 실시간 감지 시스템의 데이터 처리를 가속화하는 방법",
+      period: "2022.05 등록",
+      meta: "제10-2400435호 · 공동발명자 (3인) · 특허권자 ㈜에이치아이엔티",
+    },
+  ],
+};
+
 export const certs: CvGroup = {
   id: "certs",
   title: "자격",
@@ -114,7 +161,7 @@ export const training: CvGroup = {
 export const background = [
   { tag: "실무 경력", it: company },
   { tag: "대학원 연구", it: lab },
-].map(({ tag, it }) => ({ tag, role: it.summary!, org: it.title.replace(/^\(주\)/, ""), period: it.period }));
+].map(({ tag, it }) => ({ tag, role: it.summary!, org: it.title, period: it.period }));
 
-/** 이력 영역의 두 열. 왼쪽 경력 및 연구활동→수상, 오른쪽 학력→자격→교육·학술 활동 (PDF도 같은 구성) */
-export const cvColumns: CvGroup[][] = [[careerResearch, awards], [education, certs, training]];
+/** 이력 영역의 두 열 (높이를 맞춰 배치). 왼쪽 경력 및 연구활동→논문→특허→자격, 오른쪽 학력→수상→교육·학술 활동 (PDF도 같은 구성) */
+export const cvColumns: CvGroup[][] = [[careerResearch, papers, patents, certs], [education, awards, training]];

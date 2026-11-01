@@ -12,6 +12,8 @@ const card = z.object({
   size: z.enum(["feature", "normal", "compact"]),
   /** 경험의 성격. 카드와 상세 페이지 머리에 표시한다 */
   kind: z.enum(["연구", "산학과제", "연구실 과제", "실무", "팀 프로젝트", "수업 프로젝트"]),
+  /** 홈에서 놓일 분야 영역 (lib/experiences.ts의 groups). hidden이면 홈·이력·이전/다음에서 빼고 상세 페이지도 만들지 않는다 */
+  group: z.enum(["3d", "ai", "system", "hidden"]),
   /** 내용이 아직 부족한 프로젝트. 홈 카드에 '수정 예정' 표시 */
   draft: z.boolean().default(false),
   /** 보완할 내용. 상세 페이지 머리에 '수정 예정' 목록으로 표시 */
@@ -109,7 +111,7 @@ const figures = defineCollection({
   loader: file("src/data/figures.yaml"),
   schema: z.object({
     status: z.enum(["public", "review", "private"]),
-    kind: z.enum(["diagram", "comparison", "grid", "screenshot"]),
+    kind: z.enum(["diagram", "document", "comparison", "grid", "screenshot"]),
     source,
     dataset: z.string(),
     license: z.string(),

@@ -1,6 +1,6 @@
 ---
 interface Props {
-  kind: "review" | "pending" | "rendered" | "diagram" | "web" | "computed" | "concept" | "screen";
+  kind: "review" | "pending" | "rendered" | "diagram" | "document" | "web" | "computed" | "concept" | "screen";
 }
 const labels = {
   computed: "브라우저에서 계산",
@@ -10,6 +10,7 @@ const labels = {
   pending: "확인 중",
   rendered: "원본 렌더러 결과",
   diagram: "논문 구성도",
+  document: "과제 문서 그림",
   web: "웹 렌더러 · 근사 표현",
 } as const;
 const { kind } = Astro.props;
@@ -40,7 +41,8 @@ const { kind } = Astro.props;
     color: #23593d;
     background: #e6f2ea;
   }
-  .diagram {
+  .diagram,
+  .document {
     color: var(--c-text-2);
     background: var(--c-surface-2);
   }

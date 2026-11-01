@@ -45,7 +45,7 @@ const print = Astro.locals.print === true;
       </div>
       <figcaption>
         학습 손실의 픽셀 가중치는 w = 1 + β·M (논문 β = {beta})입니다. 웹 페이지에서는 β를 바꿔 가중치 맵을 직접 다시 계산해 볼 수
-        있습니다(학습된 3DGS 결과는 바뀌지 않음). 출처: 학위논문 그림 8 · 데이터: {loaded[0]?.fig.license}
+        있습니다(학습된 3DGS 결과는 바뀌지 않음).
       </figcaption>
     </figure>
   )
@@ -119,9 +119,8 @@ const print = Astro.locals.print === true;
     )
   }
   <figcaption class="bottom">
-    데이터: {loaded[0]?.fig.license}. 마스크는 학위논문 그림 8(인쇄 32쪽)의 ROI 확대 마스크를 잘라 쓴 것이라, 논문 PDF의 압축 때문에 값이 근사적입니다. 학습에서는
-    학습 영상마다 원래 해상도의 마스크를 사용했습니다. "광원 픽셀 비중"은 가중치의 분포만 보여주며, 실제 손실 기여는 픽셀별
-    오차 크기에 따라 달라집니다.
+    마스크는 학위논문 그림 8의 ROI 확대 마스크를 잘라 쓴 것이라 값은 근사치입니다. "광원 픽셀 비중"은 가중치의 분포를
+    보여줍니다.
   </figcaption>
 </figure>
 
@@ -244,8 +243,9 @@ const print = Astro.locals.print === true;
   }
   .beta {
     margin: var(--sp-5) 0;
-    background: var(--c-viewer-bg);
-    color: var(--c-viewer-text);
+    background: var(--c-surface);
+    color: var(--c-text);
+    border: 1px solid var(--c-border);
     border-radius: var(--radius);
     padding: var(--sp-3);
   }
@@ -267,9 +267,9 @@ const print = Astro.locals.print === true;
   .notice {
     margin: var(--sp-2) 0 var(--sp-3);
     font-size: var(--fs-xs);
-    color: #d5d7db;
-    background: #1d1f23;
-    border-left: 3px solid var(--c-accent-on-dark);
+    color: var(--c-text-2);
+    background: var(--c-surface-2);
+    border-left: 3px solid var(--c-accent);
     padding: var(--sp-2) var(--sp-3);
     border-radius: 0 4px 4px 0;
   }
@@ -277,7 +277,8 @@ const print = Astro.locals.print === true;
     display: inline-flex;
     flex-wrap: wrap;
     gap: 2px;
-    background: #24262b;
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border);
     padding: 2px;
     border-radius: var(--radius-sm);
     margin-bottom: var(--sp-3);
@@ -285,7 +286,7 @@ const print = Astro.locals.print === true;
   .seg button {
     font: inherit;
     font-size: var(--fs-xs);
-    color: #c9ccd1;
+    color: var(--c-text-2);
     background: transparent;
     border: 0;
     border-radius: 4px;
@@ -296,6 +297,7 @@ const print = Astro.locals.print === true;
     background: var(--c-surface);
     color: var(--c-text);
     font-weight: 600;
+    box-shadow: 0 0 0 1px var(--c-border-strong);
   }
   .panels {
     display: grid;
@@ -313,6 +315,7 @@ const print = Astro.locals.print === true;
     width: 100%;
     height: auto;
     display: block;
+    border: 1px solid var(--c-border);
     border-radius: 4px;
     aspect-ratio: 1 / 1;
   }
@@ -325,6 +328,7 @@ const print = Astro.locals.print === true;
     padding: 0.05em 0.5em;
     border-radius: 4px;
     background: rgb(17 18 20 / 0.78);
+    color: var(--c-viewer-text);
   }
   .control {
     display: flex;
@@ -339,14 +343,14 @@ const print = Astro.locals.print === true;
   }
   .control input {
     flex: 1 1 200px;
-    accent-color: var(--c-accent-on-dark);
+    accent-color: var(--c-accent);
   }
   .reset {
     font: inherit;
     font-size: var(--fs-xs);
-    color: var(--c-viewer-text);
-    background: #24262b;
-    border: 1px solid #3a3d43;
+    color: var(--c-text);
+    background: var(--c-surface-2);
+    border: 1px solid var(--c-border-strong);
     border-radius: 4px;
     padding: 0.3em 0.7em;
     cursor: pointer;
@@ -356,7 +360,7 @@ const print = Astro.locals.print === true;
     align-items: center;
     gap: var(--sp-2);
     font-size: var(--fs-xs);
-    color: #a3a7ae;
+    color: var(--c-text-3);
     margin-top: var(--sp-2);
   }
   .legend .bar {
@@ -372,13 +376,13 @@ const print = Astro.locals.print === true;
     margin: var(--sp-3) 0 0;
   }
   .stats div {
-    background: #1d1f23;
+    background: var(--c-surface-2);
     border-radius: 4px;
     padding: var(--sp-2) var(--sp-3);
   }
   .stats dt {
     font-size: var(--fs-xs);
-    color: #a3a7ae;
+    color: var(--c-text-3);
   }
   .stats dd {
     margin: 0;
@@ -389,9 +393,9 @@ const print = Astro.locals.print === true;
     display: grid;
     place-items: center;
     min-height: 180px;
-    border: 1px dashed #3a3d43;
+    border: 1px dashed var(--c-border-strong);
     border-radius: var(--radius-sm);
-    color: #a3a7ae;
+    color: var(--c-text-3);
     text-align: center;
     padding: var(--sp-5);
     font-size: var(--fs-sm);
@@ -399,7 +403,7 @@ const print = Astro.locals.print === true;
   .bottom {
     margin-top: var(--sp-3);
     font-size: var(--fs-xs);
-    color: #a3a7ae;
+    color: var(--c-text-3);
   }
   @media (max-width: 560px) {
     .stats {

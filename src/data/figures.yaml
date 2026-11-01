@@ -1,6 +1,6 @@
 # 결과 이미지 목록. 공개 여부(status)를 그룹마다 관리한다.
 #   public  : 배포 빌드에 포함
-#   review  : 개발 서버(또는 ALLOW_REVIEW_ASSETS=true 빌드)에서만 표시, 배포 빌드에서는 자리표시로 대체
+#   review  : 개발 서버(또는 ALLOW_REVIEW_ASSETS=true 빌드)에서만 표시, 배포 빌드에서는 그림과 캡션을 통째로 뺀다
 #   private : 어디에도 표시하지 않음
 # 모든 이미지는 원본 3DGS 렌더러 결과가 실린 논문 그림에서 잘라낸 것이다(웹 렌더러 출력 아님).
 
@@ -170,3 +170,146 @@
 
 # ---------- 프로젝트 화면 ----------
 # 사용자가 portfolio_web/images/<경험 id>/에 넣은 이미지만 등록한다. 파일은 src/assets/figures/<public|review>/projects/<경험 id>/.
+
+# 프로젝트 화면 (2026-11-01 사용자 제공, 공개 확인). 원본에서 고객사·기관 로고, 건물 도면, 내부 IP를 가린 사본만 쓴다(가림 처리 후 저장).
+- id: ctrl-dashboard
+  status: public
+  kind: screenshot
+  source: { doc: "통합관제시스템 사용자 인터페이스 설계서", location: "대시보드 화면" }
+  dataset: "시험용 데이터"
+  license: "회사 문서의 화면. 고객사 표시와 건물 도면은 가림"
+  caption: "관제 대시보드입니다. 층별 장비 목록, 장애 유형별 통계, 이벤트 현황이 한 화면에 모이며, 상태·이벤트는 백엔드가 REST·WebSocket으로 전달합니다."
+  panels:
+    main: { file: "projects/control-system/dashboard.jpg", alt: "왼쪽에 층별 장비 트리, 가운데에 흐리게 처리된 도면, 오른쪽에 장애 유형별 그래프와 처리 현황, 아래에 이벤트 표가 있는 관제 대시보드" }
+
+- id: ctrl-screens
+  status: public
+  kind: screenshot
+  source: { doc: "통합관제시스템 사용자 인터페이스 설계서", location: "NMS · 장애이력관리 화면" }
+  dataset: "시험용 데이터"
+  license: "회사 문서의 화면. 고객사 표시와 장비 IP는 가림"
+  caption: "Switch 포트·인터페이스 상태(SNMP 수집)와 장애 이력 화면입니다."
+  panels:
+    nms: { file: "projects/control-system/nms.jpg", alt: "36개 포트의 연결 상태 아이콘, CPU·메모리 사용률 그래프, 장비 정보와 포트별 인터페이스 상태 표가 있는 NMS 화면" }
+    incidents: { file: "projects/control-system/incidents.jpg", alt: "장애 ID, 발생 일시, 구분, 처리상태, 상세내용 열로 장애 이력을 조회하는 표 화면" }
+    thumb: { file: "projects/control-system/thumb-switch.jpg", alt: "Switch 36개 포트의 연결 상태 아이콘과 UP·DOWN 집계, 장비 정보 표" }
+
+- id: railink-screens
+  status: public
+  kind: screenshot
+  source: { doc: "RAILINK 본선 제출 프로토타입", location: "2026.08 화면 캡처" }
+  dataset: "공개·가공 데이터와 일부 가정으로 만든 모의 계산"
+  license: "팀 프로젝트 화면. 기관 로고는 가림"
+  caption: "왼쪽은 운송안 비교·추천 화면(화면 개발은 프런트엔드 담당, 계산·추천 설명은 데이터·AI 담당 팀원), 오른쪽은 본인이 개발한 분석 이력 API의 목록·검색·주간 요약을 쓰는 분석 히스토리 화면입니다. 수치는 모의 계산입니다."
+  panels:
+    recommend: { file: "projects/railink/recommend.jpg", alt: "인천광역시청에서 울산역까지 철도 복합운송과 도로 운송을 비용·시간·탄소로 비교하고 추천 사유를 보여주는 화면" }
+    history: { file: "projects/railink/history.jpg", alt: "분석 건수·평균 절감률 요약 카드와 검색 필터, 분석 경로·추천 결과·절감률이 담긴 분석 기록 목록 화면" }
+    thumb: { file: "projects/railink/thumb-recommend.jpg", alt: "운송 조건 입력, 철도 복합운송과 도로 운송 비교, 상세 일정과 견적이 한 화면에 있는 운송안 추천 화면" }
+
+# 라이다 운용 프로그램 (2026-11-01 사용자 제공). 장비 IP·포트·설치 위치·좌표는 가린 사본만 쓴다.
+- id: lidar-architecture
+  status: public
+  kind: document
+  source: { doc: "다채널 라이다 엣지시스템 연구개발 과제 자료", location: "시스템 구성도" }
+  dataset: "—"
+  license: "회사 과제 자료의 그림"
+  caption: "과제 전체 구성입니다. 데이터 가속기(DA)가 라이다 데이터를 받아 압축해 보내고, 엣지 시스템 서버가 변환·객체 검출을, 클라이언트가 상태·시각화·알람을 맡습니다. 본인은 오른쪽 위 클라이언트(운용 UI)를 개발했습니다."
+  panels:
+    main: { file: "projects/lidar-ops/architecture.png", alt: "라이다 3대가 데이터 가속기로 연결되고, 엣지 시스템 서버와 SDK를 거쳐 엣지 시스템 클라이언트와 VMS·관제 솔루션으로 이어지는 과제 구성도" }
+
+- id: lidar-field
+  status: public
+  kind: screenshot
+  source: { doc: "Smart GOP 현장 적용 버전", location: "4채널 라이다 설정 창" }
+  dataset: "현장 라이다 데이터"
+  license: "회사 프로그램 화면. 설치 위치·좌표는 가림"
+  caption: "Smart GOP 현장 적용 버전의 라이다 설정 창입니다. Zone 5개를 이 별도 창에서 설정하는 구조였고, 이후 재설계의 출발점이 됐습니다. Zone 설정·그래픽 기능은 원개발자가 만들었고 본인이 인수해 유지보수했습니다."
+  panels:
+    main: { file: "projects/lidar-ops/field-zone.png", alt: "왼쪽에 라이다 ID·위치·좌표·회전값과 Zone 1~5 설정 버튼, 오른쪽에 위에서 내려다본 노란 점군과 빨간 Zone 영역이 그려진 설정 창" }
+
+- id: lidar-final
+  status: public
+  kind: screenshot
+  source: { doc: "연구과제 최종 버전 운용 프로그램", location: "2차년도 클라이언트 구성화면" }
+  dataset: "시험용 라이다 데이터"
+  license: "회사 프로그램 화면. DA 이름·IP·포트는 가림"
+  caption: "연구과제 최종 버전의 통합 운용 화면입니다. 오른쪽 ES–DA–LiDAR 트리에서 장비를 고르고, 중앙 뷰어에서 점군을 3D·2D로 확인합니다. 트리 탐색, 채널 선택, 설정 저장·불러오기는 본인이 구현했습니다."
+  panels:
+    view3d: { file: "projects/lidar-ops/final-3d.png", alt: "어두운 배경의 원형 격자 위에 노란 점군이 3D로 표시되고, 오른쪽에 ES·DA·LiDAR·Channel 트리와 DA 연결 설정이 있는 화면" }
+    view2d: { file: "projects/lidar-ops/final-2d.png", alt: "같은 점군을 위에서 내려다본 2D 화면과 오른쪽의 Zone 추가, 투영 방식, 카메라 시점 버튼" }
+    # 홈 카드 썸네일용: 3D 화면에서 뷰어 영역만 잘라낸 것
+    thumb: { file: "projects/lidar-ops/final-3d-viewer.png", alt: "원형 격자 위에 노란 점군이 3D로 표시된 뷰어 영역" }
+
+# 3차원 심장 초음파 렌더링 (2026-11-01 사용자 제공). 산학과제 데이터로 만든 렌더링 결과라 공개 여부를 확인받는다.
+- id: us-result
+  status: review
+  kind: grid
+  source: { doc: "의료영상 산학과제", location: "2024.11 렌더링 결과" }
+  dataset: "산학과제 3D 심장 초음파 볼륨"
+  license: "산학과제 데이터. 공개 확인 필요"
+  caption: "산학과제 기간(2024.11)에 기존 렌더러로 만든 3차원 심장 초음파 렌더링 결과입니다."
+  panels:
+    main: { file: "projects/ultrasound-render/result.png", alt: "검은 배경 위에 파란색과 살구색으로 표현된 상자 모양의 심장 초음파 볼륨 렌더링" }
+
+- id: us-ao
+  status: review
+  kind: screenshot
+  source: { doc: "의료영상 산학과제", location: "렌더러 데모 화면" }
+  dataset: "산학과제 3D 심장 초음파 볼륨"
+  license: "산학과제 데이터·프로그램 화면. 공개 확인 필요"
+  caption: "렌더러 데모 화면입니다. 조명·AO·간접 조명 값을 바꿔 가며 화면 변화를 확인했고, 위 오류 3건 중 2건이 AO 설정과 관련된 문제였습니다."
+  panels:
+    view: { file: "projects/ultrasound-render/ao-view.png", alt: "검은 배경에 주황·회색·파란색으로 렌더링된 심장 초음파 볼륨" }
+
+- id: argus-architecture
+  status: public
+  kind: document
+  source: { doc: "ARGUS 최종발표 자료", location: "모델 구조도" }
+  dataset: "예시 입력: 실제 게임의 공개 설명·스크린샷"
+  license: "수업 프로젝트 발표 자료 그림. 예시 게임 이미지의 권리는 각 게임사에 있음"
+  caption: "모델 구조입니다. XLM-RoBERTa로 뽑은 텍스트 특징과 ViT로 뽑은 이미지 특징을 cross-modal attention으로 결합하고, 연령등급(Rating Head)과 위험요소(Risk Head)를 함께 예측합니다. 구조 아이디어는 산학 멘토가 제안했고, 본인은 기존 코드를 이어받아 이 구조로 수정·구현했습니다."
+  panels:
+    main: { file: "projects/argus/architecture.png", alt: "게임 스크린샷은 ViT로, 게임 설명 텍스트는 XLM-RoBERTa로 들어가 MatMul·Scale·Softmax·MatMul·FC·Norm으로 이루어진 Cross-modal Attention 블록을 거친 뒤 Rating Head와 Risk Head로 나뉘는 구조도" }
+    thumb: { file: "projects/argus/thumb-architecture.png", alt: "이미지·텍스트 입력이 ViT와 XLM-RoBERTa를 거쳐 Cross-modal Attention에서 합쳐지고 Rating Head와 Risk Head로 나뉘는 구조도" }
+
+- id: argus-demo
+  status: public
+  kind: screenshot
+  source: { doc: "ARGUS 웹 프로토타입", location: "2026.06 화면 캡처" }
+  dataset: "예시 입력: 실제 게임의 공개 설명·스크린샷"
+  license: "본인이 만든 프로토타입 화면. 예시 게임 이미지의 권리는 각 게임사에 있음"
+  caption: "웹 프로토타입입니다. 게임 제목·설명·스크린샷을 넣으면 한국(GRAC)·북미(ESRB) 예상 등급, 7개 위험요소 점수와 설명, 이미지 attention heatmap과 단어별 기여도가 나옵니다."
+  panels:
+    adult: { file: "projects/argus/demo-adult.png", alt: "좀비 게임을 입력해 청소년 이용불가·AO 등급과 Violence 22.7%가 가장 높은 위험요소 점수, 이미지 heatmap과 단어 기여도가 나온 화면" }
+    everyone: { file: "projects/argus/demo-everyone.png", alt: "액션 RPG를 입력해 전체 이용가·E 등급과 Horror 19.1%가 가장 높은 위험요소 점수, 이미지 heatmap과 단어 기여도가 나온 화면" }
+
+- id: argus-xai
+  status: public
+  kind: screenshot
+  source: { doc: "ARGUS 웹 프로토타입", location: "2026.06 화면 캡처" }
+  dataset: "예시 입력: 실제 게임의 공개 스크린샷"
+  license: "본인이 만든 프로토타입 화면. 예시 게임 이미지의 권리는 각 게임사에 있음"
+  caption: "중간발표 피드백 뒤 추가한 판정 근거 화면입니다. 왼쪽은 입력 스크린샷, 오른쪽은 모델이 주목한 영역을 겹친 attention heatmap이고, 아래 막대는 이미지별 cross-modal attention 가중치입니다."
+  panels:
+    main: { file: "projects/argus/xai.png", alt: "좀비 게임 스크린샷 원본과 같은 장면에 attention heatmap을 겹친 이미지, 그 아래 이미지 주목도 100% 막대" }
+
+- id: hospital-early-pipeline
+  status: public
+  kind: document
+  source: { doc: "병원 산학과제 초기 단계 자료", location: "영상 시각 2022.11" }
+  dataset: "병원 산학과제 영상"
+  license: "과제 자료 그림. 본인 참여(2025.08) 이전 단계"
+  caption: "과제 초기(2022~2023)의 인식 흐름입니다. 영상에서 사람을 검출(Scaled YOLOv4)하고 관절 위치를 추정한 뒤, 정해 둔 규칙으로 행동을 판단했습니다. 본인이 참여하기 전 단계의 그림입니다."
+  panels:
+    main: { file: "projects/hospital-event/early-pipeline.png", alt: "병실 영상에서 사람 영역을 잘라내고, 관절 점을 찍은 뒤, ID와 Caution 표시가 붙은 결과로 이어지는 4단계 그림" }
+    thumb: { file: "projects/hospital-event/thumb.png", alt: "병실 CCTV 영상 속 사람에 검출 상자와 관절 점, ID 1 Caution 표시가 붙은 화면" }
+
+- id: hospital-hat
+  status: public
+  kind: diagram
+  source: { doc: "Reza et al., HAT (ECCV 2024)", location: "Fig. 2" }
+  dataset: "해당 없음"
+  license: "원 논문 그림을 설명용으로 인용. 저작권은 원저자에게 있음"
+  caption: "이번 단계 모델의 바탕이 된 HAT(History-Augmented Anchor Transformer)의 구조입니다. 지난 프레임 특징(장기 기록)과 최근 프레임(단기 창)을 함께 보고, 지금 진행 중인 행동의 종류와 구간을 실시간으로 예측합니다. 그림은 원 논문(Reza et al., ECCV 2024, Fig. 2)에서 가져왔고, 병원 데이터에 맞춘 수정은 박사과정 연구원이 했습니다."
+  panels:
+    main: { file: "projects/hospital-event/hat-architecture.png", alt: "장기 기록 특징을 압축하는 History 모듈과 단기 창을 Transformer 인코더·디코더로 처리하는 Anchor 모듈이 연결되고, 마지막에 분류기와 회귀기로 나뉘는 HAT 구조도" }

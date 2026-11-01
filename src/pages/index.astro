@@ -1,5 +1,5 @@
 ---
-// 홈: 소개(경력·연구활동 요약 포함) → 프로젝트 전체 목록 → 역량·기술 → 이력 → 연락처.
+// 홈: 소개(경력·연구활동 요약 포함) → 프로젝트(3D·그래픽스 · AI·데이터 · 시스템 개발) → 역량·기술 → 이력 → 연락처.
 // 프로젝트 설명은 카드에서 짧게, 자세한 내용은 각 상세 페이지에 둔다.
 import { existsSync } from "node:fs";
 import { Image } from "astro:assets";
@@ -9,16 +9,15 @@ import Timeline from "../components/Timeline.astro";
 import SkillTable from "../components/SkillTable.astro";
 import { background, cvColumns } from "../data/cv";
 import { profile } from "../data/profile";
-import { getExperiences, categoryLabels } from "../lib/experiences";
+import { getExperiences, groups } from "../lib/experiences";
 import { href } from "../lib/format";
 import photo from "../assets/profile/photo.jpg";
 
 const experiences = await getExperiences();
-const counts = Object.fromEntries(
-  Object.keys(categoryLabels).map((k) => [k, experiences.filter((e) => e.entry.data.card.categories.includes(k as never)).length]),
-);
 const hasResume = existsSync(`public${profile.resume}`);
 const sec = profile.sections;
+// 섹션 설명은 문장마다 줄을 나눠, 폭에 따라 문장 중간에서 어색하게 끊기지 않게 한다
+const sentences = (t: string) => t.split(/(?<=다\.)\s+/);
 ---
 
 <BaseLayout title={profile.name} description={profile.intro.join(" ")}>
@@ -53,27 +52,30 @@ const sec = profile.sections;
   <section id="projects" class="section container" aria-labelledby="exp-title">
     <header class="sec-head">
       <h2 id="exp-title">{sec.experiences.title} <span class="count num">{experiences.length}</span></h2>
-      <p>{sec.experiences.lead}</p>
+      <p>{sentences(sec.experiences.lead).map((s) => <span class="ln">{s}</span>)}</p>
     </header>
-    <div class="filters" role="group" aria-label="프로젝트 분야로 거르기" hidden>
-      <button type="button" data-filter="all" aria-pressed="true">전체 <span class="num">{experiences.length}</span></button>
-      {
-        Object.entries(categoryLabels).map(([k, label]) => (
-          <button type="button" data-filter={k} aria-pressed="false">
-            {label} <span class="num">{counts[k]}</span>
-          </button>
-        ))
-      }
-    </div>
-    <ul class="exp-grid">
-      {experiences.map((e) => <ExperienceCard exp={e} />)}
-    </ul>
+    {
+      groups.map((g) => {
+        const list = experiences.filter((e) => e.entry.data.card.group === g.id);
+        return (
+          <section class="group" aria-labelledby={`grp-${g.id}`}>
+            <h3 id={`grp-${g.id}`} class="grp-h">
+              {g.title} <span class="count num">{list.length}</span>
+            </h3>
+            <p class="grp-lead">{g.lead}</p>
+            <ul class="exp-grid">
+              {list.map((e) => <ExperienceCard exp={e} />)}
+            </ul>
+          </section>
+        );
+      })
+    }
   </section>
 
   <section id="skills" class="section container" aria-labelledby="skills-title">
     <header class="sec-head">
       <h2 id="skills-title">{sec.skills.title}</h2>
-      <p>{sec.skills.lead}</p>
+      <p>{sentences(sec.skills.lead).map((s) => <span class="ln">{s}</span>)}</p>
     </header>
     <SkillTable />
   </section>
@@ -108,22 +110,6 @@ const sec = profile.sections;
     </dl>
   </section>
 </BaseLayout>
-
-<script>
-  // 분야 거르기. 스크립트가 없으면 버튼이 숨겨진 채로 모든 프로젝트가 보인다.
-  const bar = document.querySelector<HTMLElement>(".filters");
-  const items = document.querySelectorAll<HTMLElement>(".exp-grid > li");
-  if (bar) {
-    bar.hidden = false;
-    bar.addEventListener("click", (ev) => {
-      const btn = (ev.target as HTMLElement).closest("button");
-      if (!btn) return;
-      const f = btn.dataset.filter!;
-      bar.querySelectorAll("button").forEach((b) => b.setAttribute("aria-pressed", String(b === btn)));
-      items.forEach((li) => (li.hidden = f !== "all" && !li.dataset.cat!.split(" ").includes(f)));
-    });
-  }
-</script>
 
 <style>
   .intro {
@@ -221,34 +207,22 @@ const sec = profile.sections;
   .sec-head p {
     color: var(--c-text-2);
   }
-  .filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--sp-2);
-    margin-bottom: var(--sp-4);
+  .sec-head .ln {
+    display: block;
   }
-  .filters[hidden] {
-    display: none;
+  .group + .group {
+    margin-top: var(--sp-7);
   }
-  .filters button {
-    font: inherit;
-    font-size: var(--fs-sm);
-    padding: 6px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--c-border-strong);
-    background: var(--c-surface);
+  .grp-h {
+    font-size: var(--fs-lg);
+  }
+  .grp-h .count {
+    font-size: var(--fs-base);
+  }
+  .grp-lead {
+    margin: var(--sp-1) 0 var(--sp-4);
     color: var(--c-text-2);
-    cursor: pointer;
-    min-height: 36px;
-  }
-  .filters button[aria-pressed="true"] {
-    background: var(--c-text);
-    border-color: var(--c-text);
-    color: #fff;
-  }
-  .filters .num {
-    opacity: 0.7;
-    margin-left: 2px;
+    font-size: var(--fs-sm);
   }
   .exp-grid {
     list-style: none;
@@ -257,9 +231,6 @@ const sec = profile.sections;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: var(--sp-4);
-  }
-  .exp-grid > :global(li[hidden]) {
-    display: none;
   }
   .cv {
     display: grid;
